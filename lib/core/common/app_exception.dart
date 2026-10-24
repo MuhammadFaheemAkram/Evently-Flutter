@@ -44,6 +44,17 @@ final class InvalidInputException extends AppException {
   const InvalidInputException(super.message);
 }
 
+/// A link that isn't `https` (from the catalog, so never trusted blindly).
+final class UnsafeLinkException extends AppException {
+  const UnsafeLinkException()
+    : super('Only secure (https) links can be opened.');
+}
+
+/// The system couldn't open a link (no browser or maps app took it).
+final class LinkOpenFailedException extends AppException {
+  const LinkOpenFailedException() : super("Couldn't open the link.");
+}
+
 /// Anything unexpected that isn't one of the cases above.
 final class UnknownException extends AppException {
   const UnknownException() : super('Something went wrong. Please try again.');

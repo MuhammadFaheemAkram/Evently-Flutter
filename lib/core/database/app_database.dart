@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:evently/core/database/converters.dart';
 import 'package:evently/core/database/daos/catalog_dao.dart';
+import 'package:evently/core/database/daos/events_dao.dart';
+import 'package:evently/core/database/daos/saved_events_dao.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
 import 'package:evently/core/database/tables/tables.dart';
 import 'package:evently/domain/model/event_enums.dart';
@@ -32,7 +34,7 @@ part 'app_database.g.dart';
     RecentSearches,
     Profiles,
   ],
-  daos: [CatalogDao, UserDataDao],
+  daos: [CatalogDao, UserDataDao, EventsDao, SavedEventsDao],
 )
 class AppDatabase extends _$AppDatabase {
   /// Opens `evently.sqlite` in the app's documents directory. Tests pass an

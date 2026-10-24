@@ -1,3 +1,4 @@
+import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/design_system/design_system.dart';
 import 'package:evently/core/navigation/app_router.dart';
 import 'package:evently/core/navigation/stream_listenable.dart';
@@ -48,6 +49,8 @@ class _EventlyAppState extends State<EventlyApp> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       routerConfig: _router,
+      builder: (context, child) =>
+          UserTimeZone(location: getIt<EventClock>().local, child: child!),
     );
   }
 }

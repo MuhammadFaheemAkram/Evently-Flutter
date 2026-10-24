@@ -1,14 +1,20 @@
 import 'package:evently/core/design_system/design_system.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 extension PumpApp on WidgetTester {
-  /// Pumps [widget] inside a themed [MaterialApp] and [Scaffold], which is
-  /// enough context for any single design-system widget or screen view.
+  /// Pumps [widget] inside a themed [MaterialApp] and [Scaffold], with the
+  /// user in London ([UserTimeZone]): enough context for any single
+  /// design-system widget or screen view.
   Future<void> pumpThemed(Widget widget, {ThemeData? theme}) {
     return pumpWidget(
       MaterialApp(
         theme: theme ?? AppTheme.light(),
+        builder: (context, child) => UserTimeZone(
+          location: tz.getLocation('Europe/London'),
+          child: child!,
+        ),
         home: Scaffold(body: widget),
       ),
     );

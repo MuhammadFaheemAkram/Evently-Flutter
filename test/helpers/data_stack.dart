@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/network/asset_json_loader.dart';
 import 'package:evently/core/network/evently_api.dart';
@@ -6,12 +7,17 @@ import 'package:evently/core/network/fake_evently_api.dart';
 import 'package:evently/core/network/network_simulator.dart';
 import 'package:evently/data/repository/catalog_repository_impl.dart';
 import 'package:evently/data/repository/demo_repository_impl.dart';
+import 'package:evently/data/repository/saved_event_repository_impl.dart';
 import 'package:evently/domain/usecase/catalog_use_cases.dart';
+import 'package:evently/domain/usecase/event_use_cases.dart';
+import 'package:evently/domain/usecase/open_link_use_case.dart';
+import 'package:evently/domain/usecase/settings_use_cases.dart';
 import 'package:evently/domain/usecase/start_use_cases.dart';
 import 'package:flutter/services.dart';
 
 import 'database.dart';
 import 'fakes/fake_settings_repository.dart';
+import 'fakes/recording_link_opener.dart';
 import 'test_dependencies.dart';
 
 /// The real repositories and use cases on an in-memory database, with a
@@ -36,13 +42,28 @@ class DataStack {
   final AppDatabase db = newTestDatabase();
   final settings = FakeSettingsRepository();
 
-  late final catalog = CatalogRepositoryImpl(api, db.catalogDao);
+  late final catalog = CatalogRepositoryImpl(api, db.catalogDao, db.eventsDao);
+  late final savedEvents = SavedEventRepositoryImpl(db.savedEventsDao, clock);
+  late final eventClock = EventClock(clock, londonZone);
+  final links = RecordingLinkOpener();
   late final demo = DemoRepositoryImpl(api, db.userDataDao);
 
   late final refreshCatalog = RefreshCatalogUseCase(catalog);
   late final listCities = ListCitiesUseCase(catalog);
   late final startWithDemo = StartWithDemoUseCase(demo, settings);
   late final startFresh = StartFreshUseCase(settings);
+  late final watchEventCards = WatchEventCardsUseCase(catalog);
+  late final watchEventDetails = WatchEventDetailsUseCase(catalog);
+  late final setEventSaved = SetEventSavedUseCase(savedEvents);
+  late final openLink = OpenLinkUseCase(links);
+  late final watchSettings = WatchSettingsUseCase(settings);
+
+  /// Fetches the catalog and the demo user, as "Explore with demo data"
+  /// does.
+  Future<void> loadDemo() async {
+    await catalog.refresh();
+    await demo.loadDemoUser();
+  }
 
   Future<void> close() => db.close();
 }

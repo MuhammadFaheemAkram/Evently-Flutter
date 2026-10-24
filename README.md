@@ -44,8 +44,8 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 |------:|-------|:------:|
 | 1 | Foundation: FVM project, design system base with the category palette, typed routes with a first-launch gate, 5-tab shell with a navigation drawer, CI | ✅ Done |
 | 2 | Data models with time zones, the drift cache (catalog and user tables), the fake API, Welcome | ✅ Done |
-| 3 | Discover and Event detail | ⏳ Next |
-| 4 | Search and Saved | |
+| 3 | Discover and Event detail | ✅ Done |
+| 4 | Search and Saved | ⏳ Next |
 | 5 | RSVP, tickets and the agenda | |
 | 6 | Organizers, profile and settings | |
 | 7 | Notifications and background sync | |
@@ -85,10 +85,11 @@ Packages arrive in the phase that first needs them.
 | Models | `freezed` + `json_serializable` (checked DTOs) | 2 |
 | Database | `drift` + `drift_flutter` (catalog and user tables, `CHECK`s, a partial unique index, `shareAcrossIsolates`; schema exported to `drift_schemas/`) | 2 |
 | Preferences | `shared_preferences` (`SharedPreferencesWithCache`, resolved before `runApp`) | 2 |
-| Time | `timezone` (each event's IANA zone), `clock`, `intl` | 2 |
+| Time | `timezone` (each event's IANA zone), `clock`, `intl`; `flutter_timezone` (the device's zone) | 2, 3 |
+| Links | `url_launcher` (directions and join links, `https` only) | 3 |
 | Testing | `flutter_test`, `bloc_test`, `mocktail`, `fake_async` | 1, 2 |
 
-Planned: `flutter_timezone`, `url_launcher` (Phase 3); `bloc_concurrency`, `stream_transform` (Phase 4); `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
+Planned: `bloc_concurrency`, `stream_transform` (Phase 4); `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
 
 ---
 
@@ -140,7 +141,8 @@ FakeEventlyApi (seed rendered as of now, 700 ms) ─▶ checked DTOs ─▶ mapp
                                       every screen reads the database, never the API ◀─┘
 ```
 
-- **Time:** an event is two UTC instants plus its venue's IANA zone (`EventTime`), told in the venue's local time.
+- **Time:** an event is two UTC instants plus its venue's IANA zone (`EventTime`). An in-person event is told on its venue's clock (with "Your time" below when it differs), an online one on the user's; "Today" and "Tomorrow" are the user's days (`EventClock`, `UserTimeZone`).
+- **Joins, not flags:** "saved" and "going" are LEFT JOINs over the user's rows, re-read by drift on every save or booking, so every screen follows at once.
 - **The server's data and the user's, apart:** a refresh upserts the catalog in one transaction (`ON CONFLICT DO UPDATE`, never `REPLACE`, never deleting); "saved" and "going" are the user's own rows.
 - **Failures are values:** repositories return a `Result` with an `AppException` (offline, damaged data, unknown); on any failure nothing is written.
 
@@ -160,14 +162,15 @@ Evently/
 │   ├── main.dart                   # binding → time zones → configureDependencies() → runApp
 │   ├── app/                        # EventlyApp: themes and the router
 │   ├── core/
-│   │   ├── common/                 # Result, AppException
-│   │   ├── database/               # tables/, app_database, daos/ (catalog, user data), converters
-│   │   ├── design_system/          # theme/ (AppTheme, AppColors, CategoryPalette, tokens), widgets/ (state views, SectionHeader), large_text
+│   │   ├── common/                 # Result, AppException, guardWrite, EventClock
+│   │   ├── database/               # tables/, app_database, daos/ (catalog, user data, events, saved), converters
+│   │   ├── design_system/          # theme/, formatting/ (EventFormats), widgets/ (event cards, banner, chips, ZonedTimeText, …), UserTimeZone, large_text
 │   │   ├── navigation/             # app_routes (+ .g.dart), app_router, first_launch_redirect, stream_listenable, fallback Close button
 │   │   ├── network/                # EventlyApi, FakeEventlyApi, SeedRenderer, NetworkSimulator, dto/
+│   │   ├── platform/               # UrlLauncherLinkOpener
 │   │   └── storage/                # SettingsLocalDataSource (the preference keys)
 │   ├── data/                       # mapper/, repository/ (+ the API guard)
-│   ├── domain/                     # model/, repository/ (contracts), usecase/
+│   ├── domain/                     # model/, calculation/ (pure rules), repository/ (contracts), service/, usecase/
 │   ├── features/                   # welcome, shell (tabs + drawer), discover, search, saved, tickets, profile,
 │   │                               # event_detail, rsvp, agenda, ticket_detail, organizer, following, profile_edit, settings, about
 │   └── di/                         # injection.dart (+ .config.dart), app_module.dart
@@ -205,18 +208,17 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**312 tests** after Phase 2:
-- **Time and models:** `EventTime` in four zones, across both clock changes (a skipped and a repeated hour) and midnight, end-exclusive; places left, sold out, free, online.
-- **The database:** every `CHECK`, foreign keys on, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; the demo write replacing all in one transaction.
-- **The fake API and its seed:** relative times rendered with the venue's offset from the venue's today; latency and failures; the bundled seed passing every check as of six instants (both clock changes, New Year's Eve).
-- **Mappers:** every catalog and demo rule, one test each.
-- **Repositories:** success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed.
-- **Welcome:** the Cubit and the view in every state; first launch on the real DI graph (demo in a city, fresh, offline, a failed demo and Try again).
-- **Navigation:** every rule of the first-launch gate; typed locations, ids encoded; the app on its real DI graph (each tab, the drawer over every tab, Following, Settings and About above the tabs with Back, Edit profile as a full-screen dialog, Settings from Profile, the RSVP dialog and the agenda over their event, deep links with a Close button, an unknown location).
-- **Design system:** the themes, WCAG AA contrast of every state color and all eight category colors, in both themes; each category's own icon; the drawer.
-- **The accessibility tour:** Welcome (choosing a city, and offline), the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 %.
+**456 tests** after Phase 3:
+- **Time and models:** `EventTime` in four zones, across both clock changes and midnight, end-exclusive; the user's "today"; upcoming and past at their edges; day grouping across zones (a New York night is tomorrow in London).
+- **Rules:** why an event can't be booked (going, cancelled, ended, started, sold out) and which reason wins; Discover's sections; maps links; `https`-only links.
+- **The database:** every `CHECK`, foreign keys, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; saved and going as joins that follow every save and booking.
+- **The fake API and its seed:** relative times rendered with the venue's offset; latency and failures; the bundled seed passing every check as of six instants.
+- **Mappers and repositories:** every catalog and demo rule; success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed; saving offline.
+- **Formatting and widgets:** day headings, zoned ranges and their spoken form, prices in four currencies; the event card's actions, zone and large-text layout.
+- **Screens:** Welcome, Discover and Event detail: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link); navigation and the drawer.
+- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
 
-Twenty-five mutation checks (the code broken on purpose, one rule at a time) are each caught; see the [Phase 2 summary](docs/PHASE_2_SUMMARY.md).
+Forty-six mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -245,6 +247,7 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
 - [Phase 2 — Data layer](docs/PHASE_2_SUMMARY.md)
+- [Phase 3 — Discover and Event detail](docs/PHASE_3_SUMMARY.md)
 
 ---
 

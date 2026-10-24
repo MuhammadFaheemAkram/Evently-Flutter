@@ -1,5 +1,8 @@
+import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/di/injection.dart';
 import 'package:evently/domain/repository/settings_repository.dart';
+import 'package:evently/features/discover/cubit/discover_cubit.dart';
+import 'package:evently/features/event_detail/cubit/event_detail_cubit.dart';
 import 'package:evently/features/welcome/cubit/welcome_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,5 +23,8 @@ void main() {
 
     expect(getIt<SettingsRepository>(), same(getIt<SettingsRepository>()));
     expect(getIt<WelcomeCubit>(), isNot(same(getIt<WelcomeCubit>())));
+    expect(getIt<DiscoverCubit>(), isNot(same(getIt<DiscoverCubit>())));
+    expect(getIt<EventDetailCubit>(), isA<EventDetailCubit>());
+    expect(getIt<EventClock>().local.name, 'Europe/London');
   });
 }

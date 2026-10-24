@@ -18,6 +18,7 @@ void main() {
         WidgetTester tester, {
         required String at,
         bool onboarded = true,
+        bool withDemo = true,
         bool offline = false,
       }) async {
         tester.platformDispatcher
@@ -27,6 +28,8 @@ void main() {
         await pumpEvently(
           tester,
           onboarded: onboarded,
+          withDemo: withDemo,
+          preferences: const {'settings.preferredCity': 'London'},
           initialLocation: at,
           beforeLaunch: () => getIt<NetworkSimulator>().failRequests = offline,
         );
@@ -73,9 +76,16 @@ void main() {
         ('Saved', '/saved'),
         ('Tickets', '/tickets'),
         ('Profile', '/profile'),
-        ('Event', '/events/e1'),
-        ('RSVP', '/events/e1/rsvp'),
-        ('Agenda', '/events/e1/agenda'),
+        (
+          'Event, going, in another zone, with an agenda',
+          '/events/ev_design_conf',
+        ),
+        ('Event, online and going', '/events/ev_dart_patterns_live'),
+        ('Event, sold out', '/events/ev_dart_workshop'),
+        ('Event, over', '/events/ev_accessibility_talk'),
+        ('Event, not found', '/events/ev_nowhere'),
+        ('RSVP', '/events/ev_jazz_vaults/rsvp'),
+        ('Agenda', '/events/ev_design_conf/agenda'),
         ('Ticket', '/tickets/t1'),
         ('Organizer', '/organizers/o1'),
         ('Following', '/following'),

@@ -84,12 +84,65 @@ void main() {
     });
   });
 
+  watchTests();
+
   test('a later refresh succeeds after a failed one', () async {
     final stack = await cachedThenServing(const NetworkException());
     await stack.catalog.refresh();
     (stack.api as ScriptedEventlyApi).recover();
 
     expect(await stack.catalog.refresh(), isOk(25));
+  });
+}
+
+void watchTests() {
+  group('watching the cache', () {
+    late DataStack stack;
+
+    setUp(() async {
+      stack = DataStack();
+      addTearDown(stack.close);
+      await stack.loadDemo();
+    });
+
+    test("an event's details: its organizer, the start of its agenda, your "
+        'ticket', () async {
+      final details = (await stack.catalog
+          .watchEventDetails('ev_design_conf')
+          .first)!;
+
+      expect(details.organizer.id, 'org_berlin_design');
+      expect(details.agendaPreview, hasLength(3));
+      expect(details.sessionCount, 12);
+      expect(
+        details.agendaPreview.first.start.isBefore(
+          details.agendaPreview.last.start,
+        ),
+        isTrue,
+      );
+      expect(details.item.isGoing, isTrue);
+      expect(details.item.isSaved, isTrue);
+      expect(details.ticketId, 'tkt_demo_design_conf');
+    });
+
+    test('an event without an agenda, and one not cached', () async {
+      final jazz = (await stack.catalog
+          .watchEventDetails('ev_jazz_vaults')
+          .first)!;
+
+      expect(jazz.sessionCount, 0);
+      expect(jazz.agendaPreview, isEmpty);
+      expect(jazz.ticketId, isNull);
+      expect(await stack.catalog.watchEventDetails('ev_nowhere').first, isNull);
+    });
+
+    test("a refresh keeps the demo's saves and tickets", () async {
+      await stack.catalog.refresh();
+
+      final cards = await stack.catalog.watchEventCards().first;
+      expect(cards.where((c) => c.isSaved), hasLength(4));
+      expect(cards.where((c) => c.isGoing), hasLength(4));
+    });
   });
 }
 

@@ -1,4 +1,7 @@
 import 'package:evently/app/evently_app.dart';
+import 'package:evently/di/injection.dart';
+import 'package:evently/domain/repository/catalog_repository.dart';
+import 'package:evently/domain/repository/demo_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,12 +13,16 @@ import 'test_dependencies.dart';
 /// first launch, optionally on a deep link, as of [demoNow]. Pair it with
 /// `tearDown(getIt.reset)`.
 ///
+/// An app past Welcome has the catalog cached, as Welcome leaves it; with
+/// [withDemo], the demo user too ("Explore with demo data").
+///
 /// [preferences] adds saved settings (raw keys). [beforeLaunch] runs once
 /// the graph exists and before the first frame (to switch the network off,
 /// say); it must not wait on anything (§11.44).
 Future<void> pumpEvently(
   WidgetTester tester, {
   bool onboarded = true,
+  bool withDemo = false,
   String? initialLocation,
   Map<String, Object> preferences = const {},
   void Function()? beforeLaunch,
@@ -23,6 +30,15 @@ Future<void> pumpEvently(
   await configureTestDependencies(
     preferences: {if (onboarded) ...onboardedPreferences, ...preferences},
   );
+  if (onboarded) {
+    // On the real event loop: before the first pump nothing advances the
+    // widget test's fake time, so even the simulated network's zero-length
+    // delay would never fire (§11.44).
+    await tester.runAsync(() async {
+      await getIt<CatalogRepository>().refresh();
+      if (withDemo) await getIt<DemoRepository>().loadDemoUser();
+    });
+  }
   beforeLaunch?.call();
   tester.usePhoneSurface();
   await tester.pumpWidget(EventlyApp(initialLocation: initialLocation));

@@ -18,5 +18,18 @@ abstract class EventCardItem with _$EventCardItem {
 
     /// You hold an active ticket.
     @Default(false) bool isGoing,
+
+    /// Your choice on the event's reminder toggle; `null` until you touch
+    /// it, when the default applies.
+    bool? reminderChoice,
   }) = _EventCardItem;
+
+  const EventCardItem._();
+
+  /// Only an event you're going to or saved has a reminder.
+  bool get canHaveReminder => isGoing || isSaved;
+
+  /// Whether you're reminded before it: your choice, or by default only
+  /// when you're going (a save alone is "maybe").
+  bool get hasReminder => canHaveReminder && (reminderChoice ?? isGoing);
 }

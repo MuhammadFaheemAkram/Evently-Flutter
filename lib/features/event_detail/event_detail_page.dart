@@ -156,6 +156,14 @@ class _EventBody extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.medium),
           child: _RsvpEntry(details: details, block: state.rsvpBlock),
         ),
+        if (state.showsReminder)
+          ReminderToggle(
+            value: details.item.hasReminder,
+            lead: state.reminderLead.label,
+            notificationsOn: state.notificationsEnabled,
+            onChanged: (enabled) =>
+                context.read<EventDetailCubit>().setReminder(enabled: enabled),
+          ),
         const SectionHeader('Tickets'),
         _Offers(event: event),
         const SectionHeader('About'),

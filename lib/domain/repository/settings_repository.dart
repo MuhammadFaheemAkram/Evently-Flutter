@@ -11,4 +11,8 @@ abstract interface class SettingsRepository {
 
   /// Applies [change] to the current settings, and saves what it changed.
   Future<void> update(AppSettings Function(AppSettings settings) change);
+
+  /// Reads the stored settings again, and publishes them if they changed:
+  /// on resume, after the background isolate may have saved some.
+  Future<void> reload();
 }

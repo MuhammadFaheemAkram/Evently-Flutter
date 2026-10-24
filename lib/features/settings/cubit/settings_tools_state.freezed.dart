@@ -18,7 +18,9 @@ mixin _$SettingsToolsState {
 /// The cities a user can choose, A to Z.
  List<String> get cities;/// The action under way; the others wait.
  SettingsTask? get running;/// "Simulate network failure".
- bool get failingRequests;/// A one-time SnackBar; [messageSerial] makes each one distinct.
+ bool get failingRequests;/// The system refused notifications when the user turned them on: only
+/// its settings can change that now.
+ bool get notificationsDenied;/// A one-time SnackBar; [messageSerial] makes each one distinct.
  String? get message; int get messageSerial;
 /// Create a copy of SettingsToolsState
 /// with the given fields replaced by the non-null parameter values.
@@ -31,20 +33,20 @@ $SettingsToolsStateCopyWith<SettingsToolsState> get copyWith => _$SettingsToolsS
 @override
 bool operator ==(Object other) {
   final _this = this as SettingsToolsState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsToolsState&&const DeepCollectionEquality().equals(other.cities, _this.cities)&&(identical(other.running, _this.running) || other.running == _this.running)&&(identical(other.failingRequests, _this.failingRequests) || other.failingRequests == _this.failingRequests)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.messageSerial, _this.messageSerial) || other.messageSerial == _this.messageSerial));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsToolsState&&const DeepCollectionEquality().equals(other.cities, _this.cities)&&(identical(other.running, _this.running) || other.running == _this.running)&&(identical(other.failingRequests, _this.failingRequests) || other.failingRequests == _this.failingRequests)&&(identical(other.notificationsDenied, _this.notificationsDenied) || other.notificationsDenied == _this.notificationsDenied)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.messageSerial, _this.messageSerial) || other.messageSerial == _this.messageSerial));
 }
 
 
 @override
 int get hashCode {
   final _this = this as SettingsToolsState;
-  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.cities),_this.running,_this.failingRequests,_this.message,_this.messageSerial);
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.cities),_this.running,_this.failingRequests,_this.notificationsDenied,_this.message,_this.messageSerial);
 }
 
 @override
 String toString() {
   final _this = this as SettingsToolsState;
-  return 'SettingsToolsState(cities: ${_this.cities}, running: ${_this.running}, failingRequests: ${_this.failingRequests}, message: ${_this.message}, messageSerial: ${_this.messageSerial})';
+  return 'SettingsToolsState(cities: ${_this.cities}, running: ${_this.running}, failingRequests: ${_this.failingRequests}, notificationsDenied: ${_this.notificationsDenied}, message: ${_this.message}, messageSerial: ${_this.messageSerial})';
 }
 
 
@@ -55,7 +57,7 @@ abstract mixin class $SettingsToolsStateCopyWith<$Res>  {
   factory $SettingsToolsStateCopyWith(SettingsToolsState value, $Res Function(SettingsToolsState) _then) = _$SettingsToolsStateCopyWithImpl;
 @useResult
 $Res call({
- List<String> cities, SettingsTask? running, bool failingRequests, String? message, int messageSerial
+ List<String> cities, SettingsTask? running, bool failingRequests, bool notificationsDenied, String? message, int messageSerial
 });
 
 
@@ -72,11 +74,12 @@ class _$SettingsToolsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsToolsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? cities = null,Object? running = freezed,Object? failingRequests = null,Object? message = freezed,Object? messageSerial = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? cities = null,Object? running = freezed,Object? failingRequests = null,Object? notificationsDenied = null,Object? message = freezed,Object? messageSerial = null,}) {
   return _then(SettingsToolsState(
 cities: null == cities ? _self.cities : cities // ignore: cast_nullable_to_non_nullable
 as List<String>,running: freezed == running ? _self.running : running // ignore: cast_nullable_to_non_nullable
 as SettingsTask?,failingRequests: null == failingRequests ? _self.failingRequests : failingRequests // ignore: cast_nullable_to_non_nullable
+as bool,notificationsDenied: null == notificationsDenied ? _self.notificationsDenied : notificationsDenied // ignore: cast_nullable_to_non_nullable
 as bool,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String?,messageSerial: null == messageSerial ? _self.messageSerial : messageSerial // ignore: cast_nullable_to_non_nullable
 as int,
@@ -164,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  String? message,  int messageSerial)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  bool notificationsDenied,  String? message,  int messageSerial)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsToolsState() when $default != null:
-return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_that.messageSerial);case _:
+return $default(_that.cities,_that.running,_that.failingRequests,_that.notificationsDenied,_that.message,_that.messageSerial);case _:
   return orElse();
 
 }
@@ -185,10 +188,10 @@ return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  String? message,  int messageSerial)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  bool notificationsDenied,  String? message,  int messageSerial)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsToolsState():
-return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_that.messageSerial);case _:
+return $default(_that.cities,_that.running,_that.failingRequests,_that.notificationsDenied,_that.message,_that.messageSerial);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +208,10 @@ return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  String? message,  int messageSerial)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> cities,  SettingsTask? running,  bool failingRequests,  bool notificationsDenied,  String? message,  int messageSerial)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsToolsState() when $default != null:
-return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_that.messageSerial);case _:
+return $default(_that.cities,_that.running,_that.failingRequests,_that.notificationsDenied,_that.message,_that.messageSerial);case _:
   return null;
 
 }
@@ -220,7 +223,7 @@ return $default(_that.cities,_that.running,_that.failingRequests,_that.message,_
 
 
 class _SettingsToolsState implements SettingsToolsState {
-  const _SettingsToolsState({ List<String> cities = const <String>[], this.running, this.failingRequests = false, this.message, this.messageSerial = 0}): _cities = cities;
+  const _SettingsToolsState({ List<String> cities = const <String>[], this.running, this.failingRequests = false, this.notificationsDenied = false, this.message, this.messageSerial = 0}): _cities = cities;
   
 
 /// The cities a user can choose, A to Z.
@@ -236,6 +239,9 @@ class _SettingsToolsState implements SettingsToolsState {
 @override final  SettingsTask? running;
 /// "Simulate network failure".
 @override@JsonKey() final  bool failingRequests;
+/// The system refused notifications when the user turned them on: only
+/// its settings can change that now.
+@override@JsonKey() final  bool notificationsDenied;
 /// A one-time SnackBar; [messageSerial] makes each one distinct.
 @override final  String? message;
 @override@JsonKey() final  int messageSerial;
@@ -250,18 +256,18 @@ _$SettingsToolsStateCopyWith<_SettingsToolsState> get copyWith => __$SettingsToo
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsToolsState&&const DeepCollectionEquality().equals(other.cities, _cities)&&(identical(other.running, running) || other.running == running)&&(identical(other.failingRequests, failingRequests) || other.failingRequests == failingRequests)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageSerial, messageSerial) || other.messageSerial == messageSerial));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsToolsState&&const DeepCollectionEquality().equals(other.cities, _cities)&&(identical(other.running, running) || other.running == running)&&(identical(other.failingRequests, failingRequests) || other.failingRequests == failingRequests)&&(identical(other.notificationsDenied, notificationsDenied) || other.notificationsDenied == notificationsDenied)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageSerial, messageSerial) || other.messageSerial == messageSerial));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_cities),running,failingRequests,message,messageSerial);
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_cities),running,failingRequests,notificationsDenied,message,messageSerial);
 }
 
 @override
 String toString() {
-    return 'SettingsToolsState(cities: $cities, running: $running, failingRequests: $failingRequests, message: $message, messageSerial: $messageSerial)';
+    return 'SettingsToolsState(cities: $cities, running: $running, failingRequests: $failingRequests, notificationsDenied: $notificationsDenied, message: $message, messageSerial: $messageSerial)';
 }
 
 
@@ -272,7 +278,7 @@ abstract mixin class _$SettingsToolsStateCopyWith<$Res> implements $SettingsTool
   factory _$SettingsToolsStateCopyWith(_SettingsToolsState value, $Res Function(_SettingsToolsState) _then) = __$SettingsToolsStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> cities, SettingsTask? running, bool failingRequests, String? message, int messageSerial
+ List<String> cities, SettingsTask? running, bool failingRequests, bool notificationsDenied, String? message, int messageSerial
 });
 
 
@@ -289,11 +295,12 @@ class __$SettingsToolsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsToolsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? cities = null,Object? running = freezed,Object? failingRequests = null,Object? message = freezed,Object? messageSerial = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? cities = null,Object? running = freezed,Object? failingRequests = null,Object? notificationsDenied = null,Object? message = freezed,Object? messageSerial = null,}) {
   return _then(_SettingsToolsState(
 cities: null == cities ? _self._cities : cities // ignore: cast_nullable_to_non_nullable
 as List<String>,running: freezed == running ? _self.running : running // ignore: cast_nullable_to_non_nullable
 as SettingsTask?,failingRequests: null == failingRequests ? _self.failingRequests : failingRequests // ignore: cast_nullable_to_non_nullable
+as bool,notificationsDenied: null == notificationsDenied ? _self.notificationsDenied : notificationsDenied // ignore: cast_nullable_to_non_nullable
 as bool,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String?,messageSerial: null == messageSerial ? _self.messageSerial : messageSerial // ignore: cast_nullable_to_non_nullable
 as int,

@@ -2,7 +2,7 @@
 /// minutes since midnight.
 ///
 /// An event's start in the catalog's seed ("18:30" in its venue's zone), and
-/// later the daily summary's time, are times *of a day* in some zone. Stored
+/// the daily summary's time, are times *of a day* in some zone. Stored
 /// as `HH:mm` text, which reads well and sorts like the times it stands
 /// for.
 ///
@@ -29,10 +29,9 @@ extension type const TimeOfDayValue._(int minutesSinceMidnight) {
     return TimeOfDayValue(hour, minute);
   }
 
-  /// Settings' defaults, as constants so models can use them in `@Default`.
-  static const nineAm = TimeOfDayValue._(9 * 60);
-  static const eightPm = TimeOfDayValue._(20 * 60);
-  static const nineThirtyPm = TimeOfDayValue._(21 * 60 + 30);
+  /// The daily summary's default, as a constant so `AppSettings` can use
+  /// it in `@Default`.
+  static const eightAm = TimeOfDayValue._(8 * 60);
 
   int get hour => minutesSinceMidnight ~/ 60;
 

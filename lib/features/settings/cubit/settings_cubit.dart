@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:evently/domain/model/app_settings.dart';
 import 'package:evently/domain/model/device_info.dart';
+import 'package:evently/domain/model/time_of_day_value.dart';
 import 'package:evently/domain/repository/settings_repository.dart';
+import 'package:evently/domain/usecase/notification_use_cases.dart';
 import 'package:evently/domain/usecase/settings_use_cases.dart';
 import 'package:evently/features/settings/cubit/settings_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +23,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     this._updateThemeMode,
     this._updateDynamicColor,
     this._updatePreferredCity,
+    this._updateReminderLead,
+    this._updateSummary,
     DeviceColors deviceColors,
   ) : super(
         SettingsState(settings: _settings.current, deviceColors: deviceColors),
@@ -30,6 +34,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   final UpdateThemeModeUseCase _updateThemeMode;
   final UpdateDynamicColorUseCase _updateDynamicColor;
   final UpdatePreferredCityUseCase _updatePreferredCity;
+  final UpdateReminderLeadUseCase _updateReminderLead;
+  final UpdateSummaryUseCase _updateSummary;
 
   StreamSubscription<AppSettings>? _changes;
 
@@ -45,6 +51,12 @@ class SettingsCubit extends Cubit<SettingsState> {
       _updateDynamicColor(enabled: enabled);
 
   Future<void> setPreferredCity(String? city) => _updatePreferredCity(city);
+
+  Future<void> setReminderLead(ReminderLead lead) => _updateReminderLead(lead);
+
+  /// The daily summary on or off, or its time.
+  Future<void> setSummary({bool? enabled, TimeOfDayValue? time}) =>
+      _updateSummary(enabled: enabled, time: time);
 
   @override
   Future<void> close() async {

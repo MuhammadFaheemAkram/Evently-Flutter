@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../helpers/app_harness.dart';
+import '../helpers/fakes/fake_notification_scheduler.dart';
 
 // Every screen, in light and dark, with text at 200%: no layout overflows
 // (an overflow fails the test), tap targets of at least 48 × 48, a label on
@@ -20,6 +21,8 @@ void main() {
         bool onboarded = true,
         bool withDemo = true,
         bool offline = false,
+        bool notificationsOn = false,
+        FakeNotificationScheduler? notifications,
       }) async {
         tester.platformDispatcher
           ..textScaleFactorTestValue = 2
@@ -29,7 +32,13 @@ void main() {
           tester,
           onboarded: onboarded,
           withDemo: withDemo,
-          preferences: const {'settings.preferredCity': 'London'},
+          preferences: {
+            'settings.preferredCity': 'London',
+            if (notificationsOn) 'settings.notificationsEnabled': true,
+          },
+          notifications:
+              notifications ??
+              FakeNotificationScheduler(permitted: notificationsOn),
           initialLocation: at,
           beforeLaunch: () => getIt<NetworkSimulator>().failRequests = offline,
         );
@@ -117,6 +126,47 @@ void main() {
         await tester.tap(find.text('Save'));
         await tester.pumpAndSettle();
         expect(find.text('Enter an email like name@example.com.'), findsOne);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Settings, notifications on', (tester) async {
+        await open(tester, at: '/settings', notificationsOn: true);
+        expect(find.text('Reminder lead time'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Settings, notifications denied', (tester) async {
+        await open(
+          tester,
+          at: '/settings',
+          notifications: FakeNotificationScheduler(grantsWhenAsked: false),
+        );
+        await tester.tap(find.text('Notifications').last);
+        await tester.pumpUntilFound(find.text('Open settings'));
+        await expectAccessible(tester);
+      });
+
+      testWidgets('the reminder lead time choice', (tester) async {
+        await open(tester, at: '/settings', notificationsOn: true);
+        await tester.tapAndSettle(find.text('Reminder lead time'));
+        expect(find.text('3 hours'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('the planned notifications sheet', (tester) async {
+        await open(tester, at: '/settings', notificationsOn: true);
+        await tester.ensureVisible(find.text('Show planned notifications'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Show planned notifications'));
+        await tester.pumpUntilFound(find.text('Planned notifications'));
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Event, saved, its reminder on', (tester) async {
+        await open(tester, at: '/events/ev_jazz_vaults', notificationsOn: true);
+        await tester.pumpUntilFound(find.text('Remind me'));
+        await tester.tap(find.text('Remind me'));
+        await tester.pumpUntilFound(find.text('1 hour before it starts'));
         await expectAccessible(tester);
       });
 

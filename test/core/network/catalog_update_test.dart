@@ -10,6 +10,7 @@ import 'package:evently/domain/model/event_enums.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/fakes/memory_demo_calendar.dart';
 import '../../helpers/test_dependencies.dart';
 
 // The developer's "Publish a catalog update", on the fake server.
@@ -23,6 +24,7 @@ void main() {
       AssetJsonLoader(rootBundle),
       NetworkSimulator(latency: Duration.zero),
       Clock.fixed(demoNow),
+      MemoryDemoCalendar(Clock.fixed(demoNow)),
     );
   });
 

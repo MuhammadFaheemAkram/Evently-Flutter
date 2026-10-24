@@ -135,7 +135,10 @@ void main() {
 
       await tester.tapAndSettle(find.byTooltip('Settings'));
       expect(appBarTitled('Settings'), findsOneWidget);
+      // Built below the screen already: scroll it on screen (§11.78).
       await tester.scrollUntilVisible(find.text('About Evently'), 300);
+      await tester.ensureVisible(find.text('About Evently'));
+      await tester.pumpAndSettle();
       await tester.tapAndSettle(find.text('About Evently'));
       expect(appBarTitled('About'), findsOneWidget);
 

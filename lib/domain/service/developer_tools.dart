@@ -11,4 +11,8 @@ abstract interface class DeveloperTools {
   /// moves, another is cancelled, one is edited and new ones appear.
   /// Returns a summary of what changed.
   Future<String> publishCatalogUpdate();
+
+  /// Starts the server's calendar again from now: the demo's events are
+  /// "in 3 days" from today again (Reset demo data).
+  Future<void> restartDemoCalendar();
 }

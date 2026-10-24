@@ -8,5 +8,6 @@ extension EventCardRowToDomain on EventCardRow {
     organizerName: organizerName,
     isSaved: isSaved,
     isGoing: activeTicketId != null,
+    reminderChoice: reminderChoice,
   );
 }

@@ -1,6 +1,7 @@
 import 'package:evently/core/storage/settings_local_data_source.dart';
 import 'package:evently/data/repository/settings_repository_impl.dart';
 import 'package:evently/domain/model/app_settings.dart';
+import 'package:evently/domain/model/time_of_day_value.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -137,5 +138,74 @@ void main() {
     await pumpEventQueue();
 
     expect(seen, const [AppSettings()]);
+  });
+
+  group('notifications', () {
+    test('off by default; a 1-hour lead, the summary on at 08:00', () async {
+      final settings = (await repository()).current;
+
+      expect(settings.notificationsEnabled, isFalse);
+      expect(settings.reminderLead, ReminderLead.oneHour);
+      expect(settings.summaryEnabled, isTrue);
+      expect(settings.summaryTime, TimeOfDayValue(8, 0));
+    });
+
+    test('saved under their keys and read back', () async {
+      final settings = await repository();
+
+      await settings.update(
+        (s) => s.copyWith(
+          notificationsEnabled: true,
+          reminderLead: ReminderLead.oneDay,
+          summaryEnabled: false,
+          summaryTime: TimeOfDayValue(7, 30),
+        ),
+      );
+
+      final stored = await preferences();
+      expect(stored.getBool('settings.notificationsEnabled'), isTrue);
+      expect(stored.getString('settings.reminderLead'), 'oneDay');
+      expect(stored.getBool('settings.summaryEnabled'), isFalse);
+      expect(stored.getString('settings.summaryTime'), '07:30');
+      expect((await repository()).current, settings.current);
+    });
+
+    test(
+      'a value this version can\'t read falls back to the default',
+      () async {
+        deviceHolds({
+          'settings.reminderLead': 'oneWeek',
+          'settings.summaryTime': '7:30',
+        });
+
+        final settings = (await repository()).current;
+
+        expect(settings.reminderLead, ReminderLead.oneHour);
+        expect(settings.summaryTime, TimeOfDayValue(8, 0));
+      },
+    );
+
+    test('reload: what another isolate saved is published', () async {
+      deviceHolds({'settings.notificationsEnabled': true});
+      final app = await repository();
+      final background = await repository();
+      final seen = <AppSettings>[];
+      final subscription = app.watch().listen(seen.add);
+      addTearDown(subscription.cancel);
+
+      await background.update((s) => s.copyWith(notificationsEnabled: false));
+      expect(app.current.notificationsEnabled, isTrue);
+      await app.reload();
+      await pumpEventQueue();
+
+      expect(app.current.notificationsEnabled, isFalse);
+      expect(seen.last.notificationsEnabled, isFalse);
+
+      // Nothing new: nothing published.
+      final published = seen.length;
+      await app.reload();
+      await pumpEventQueue();
+      expect(seen, hasLength(published));
+    });
   });
 }

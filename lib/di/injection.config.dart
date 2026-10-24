@@ -18,17 +18,22 @@ import 'package:evently/core/database/daos/events_dao.dart' as _i386;
 import 'package:evently/core/database/daos/organizers_dao.dart' as _i900;
 import 'package:evently/core/database/daos/profile_dao.dart' as _i144;
 import 'package:evently/core/database/daos/recent_searches_dao.dart' as _i835;
+import 'package:evently/core/database/daos/reminders_dao.dart' as _i627;
 import 'package:evently/core/database/daos/saved_events_dao.dart' as _i794;
 import 'package:evently/core/database/daos/session_bookmarks_dao.dart' as _i574;
 import 'package:evently/core/database/daos/tickets_dao.dart' as _i4;
 import 'package:evently/core/database/daos/user_data_dao.dart' as _i542;
 import 'package:evently/core/network/asset_json_loader.dart' as _i1000;
+import 'package:evently/core/network/demo_calendar.dart' as _i102;
 import 'package:evently/core/network/evently_api.dart' as _i844;
 import 'package:evently/core/network/fake_developer_tools.dart' as _i520;
 import 'package:evently/core/network/fake_evently_api.dart' as _i796;
 import 'package:evently/core/network/network_simulator.dart' as _i1024;
+import 'package:evently/core/platform/local_notifications.dart' as _i280;
 import 'package:evently/core/platform/material_you_color_source.dart' as _i711;
 import 'package:evently/core/platform/url_launcher_link_opener.dart' as _i1051;
+import 'package:evently/core/platform/workmanager_background_work.dart'
+    as _i517;
 import 'package:evently/core/storage/settings_local_data_source.dart' as _i327;
 import 'package:evently/data/repository/booking_repository_impl.dart' as _i373;
 import 'package:evently/data/repository/catalog_repository_impl.dart' as _i507;
@@ -38,6 +43,8 @@ import 'package:evently/data/repository/organizer_repository_impl.dart'
 import 'package:evently/data/repository/profile_repository_impl.dart' as _i75;
 import 'package:evently/data/repository/recent_searches_repository_impl.dart'
     as _i315;
+import 'package:evently/data/repository/reminder_repository_impl.dart'
+    as _i1044;
 import 'package:evently/data/repository/saved_event_repository_impl.dart'
     as _i947;
 import 'package:evently/data/repository/schedule_repository_impl.dart' as _i564;
@@ -52,16 +59,21 @@ import 'package:evently/domain/repository/organizer_repository.dart' as _i385;
 import 'package:evently/domain/repository/profile_repository.dart' as _i156;
 import 'package:evently/domain/repository/recent_searches_repository.dart'
     as _i107;
+import 'package:evently/domain/repository/reminder_repository.dart' as _i297;
 import 'package:evently/domain/repository/saved_event_repository.dart' as _i285;
 import 'package:evently/domain/repository/schedule_repository.dart' as _i49;
 import 'package:evently/domain/repository/search_repository.dart' as _i691;
 import 'package:evently/domain/repository/settings_repository.dart' as _i233;
+import 'package:evently/domain/service/background_work.dart' as _i175;
 import 'package:evently/domain/service/developer_tools.dart' as _i405;
 import 'package:evently/domain/service/dynamic_color_source.dart' as _i506;
 import 'package:evently/domain/service/link_opener.dart' as _i216;
+import 'package:evently/domain/service/notification_scheduler.dart' as _i819;
+import 'package:evently/domain/usecase/background_use_cases.dart' as _i246;
 import 'package:evently/domain/usecase/booking_use_cases.dart' as _i217;
 import 'package:evently/domain/usecase/catalog_use_cases.dart' as _i997;
 import 'package:evently/domain/usecase/event_use_cases.dart' as _i351;
+import 'package:evently/domain/usecase/notification_use_cases.dart' as _i355;
 import 'package:evently/domain/usecase/open_link_use_case.dart' as _i860;
 import 'package:evently/domain/usecase/organizer_use_cases.dart' as _i148;
 import 'package:evently/domain/usecase/profile_use_cases.dart' as _i112;
@@ -113,6 +125,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => appModule.deviceTimeZone,
       preResolve: true,
     );
+    gh.lazySingleton<_i280.LocalNotifications>(
+      () => appModule.localNotifications,
+    );
     await gh.lazySingletonAsync<_i94.AppInfo>(
       () => appModule.appInfo,
       preResolve: true,
@@ -141,6 +156,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i574.SessionBookmarksDao>(
       () => appModule.sessionBookmarksDao(gh<_i496.AppDatabase>()),
     );
+    gh.lazySingleton<_i627.RemindersDao>(
+      () => appModule.remindersDao(gh<_i496.AppDatabase>()),
+    );
     gh.lazySingleton<_i794.SavedEventsDao>(
       () => appModule.savedEventsDao(gh<_i496.AppDatabase>()),
     );
@@ -157,8 +175,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i454.Clock>(),
       ),
     );
+    gh.lazySingleton<_i819.NotificationScheduler>(
+      () => appModule.notificationScheduler(gh<_i280.LocalNotifications>()),
+    );
+    gh.lazySingleton<_i819.NotificationInteractions>(
+      () => appModule.notificationInteractions(gh<_i280.LocalNotifications>()),
+    );
     gh.lazySingleton<_i216.LinkOpener>(
       () => const _i1051.UrlLauncherLinkOpener(),
+    );
+    gh.lazySingleton<_i175.BackgroundWork>(
+      () => const _i517.WorkmanagerBackgroundWork(),
+    );
+    gh.lazySingleton<_i297.ReminderRepository>(
+      () => _i1044.ReminderRepositoryImpl(
+        gh<_i627.RemindersDao>(),
+        gh<_i386.EventsDao>(),
+      ),
     );
     gh.factory<_i983.WatchAgendaUseCase>(
       () => _i983.WatchAgendaUseCase(gh<_i49.ScheduleRepository>()),
@@ -169,9 +202,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i506.DynamicColorSource>(
       () => const _i711.MaterialYouColorSource(),
     );
+    gh.factory<_i355.SetEventReminderUseCase>(
+      () => _i355.SetEventReminderUseCase(gh<_i297.ReminderRepository>()),
+    );
     gh.lazySingleton<_i327.SettingsLocalDataSource>(
       () =>
           _i327.SettingsLocalDataSource(gh<_i460.SharedPreferencesWithCache>()),
+    );
+    gh.factory<_i355.OpenNotificationSettingsUseCase>(
+      () => _i355.OpenNotificationSettingsUseCase(
+        gh<_i819.NotificationScheduler>(),
+      ),
     );
     gh.factory<_i788.AgendaCubit>(
       () => _i788.AgendaCubit(
@@ -232,9 +273,30 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i860.OpenLinkUseCase>(
       () => _i860.OpenLinkUseCase(gh<_i216.LinkOpener>()),
     );
+    gh.lazySingleton<_i102.DemoCalendar>(
+      () => _i102.StoredDemoCalendar(
+        gh<_i327.SettingsLocalDataSource>(),
+        gh<_i454.Clock>(),
+      ),
+    );
+    gh.factory<_i355.ShowRsvpConfirmationUseCase>(
+      () => _i355.ShowRsvpConfirmationUseCase(
+        gh<_i233.SettingsRepository>(),
+        gh<_i819.NotificationScheduler>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
     gh.factory<_i148.WatchFollowingUseCase>(
       () => _i148.WatchFollowingUseCase(
         gh<_i385.OrganizerRepository>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i355.AlertCatalogChangesUseCase>(
+      () => _i355.AlertCatalogChangesUseCase(
+        gh<_i297.ReminderRepository>(),
+        gh<_i233.SettingsRepository>(),
+        gh<_i819.NotificationScheduler>(),
         gh<_i805.EventClock>(),
       ),
     );
@@ -243,13 +305,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i351.WatchSavedEventsUseCase>(),
         gh<_i351.SetEventSavedUseCase>(),
         gh<_i805.EventClock>(),
-      ),
-    );
-    gh.lazySingleton<_i796.FakeEventlyApi>(
-      () => _i796.FakeEventlyApi(
-        gh<_i1000.AssetJsonLoader>(),
-        gh<_i1024.NetworkSimulator>(),
-        gh<_i454.Clock>(),
       ),
     );
     gh.factory<_i112.WatchProfileUseCase>(
@@ -263,6 +318,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i112.WatchProfileUseCase>(),
         gh<_i112.UpdateProfileUseCase>(),
       ),
+    );
+    gh.factory<_i355.UpdateReminderLeadUseCase>(
+      () => _i355.UpdateReminderLeadUseCase(gh<_i233.SettingsRepository>()),
+    );
+    gh.factory<_i355.UpdateSummaryUseCase>(
+      () => _i355.UpdateSummaryUseCase(gh<_i233.SettingsRepository>()),
     );
     gh.factory<_i27.WatchSettingsUseCase>(
       () => _i27.WatchSettingsUseCase(gh<_i233.SettingsRepository>()),
@@ -306,13 +367,39 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i805.EventClock>(),
       ),
     );
-    gh.lazySingleton<_i844.EventlyApi>(
-      () => appModule.api(gh<_i796.FakeEventlyApi>()),
+    gh.factory<_i355.SetNotificationsEnabledUseCase>(
+      () => _i355.SetNotificationsEnabledUseCase(
+        gh<_i233.SettingsRepository>(),
+        gh<_i819.NotificationScheduler>(),
+      ),
     );
     gh.factory<_i550.ProfileCubit>(
       () => _i550.ProfileCubit(
         gh<_i112.WatchProfileUseCase>(),
         gh<_i112.WatchProfileCountsUseCase>(),
+      ),
+    );
+    gh.lazySingleton<_i355.SyncNotificationsUseCase>(
+      () => _i355.SyncNotificationsUseCase(
+        gh<_i233.SettingsRepository>(),
+        gh<_i297.ReminderRepository>(),
+        gh<_i819.NotificationScheduler>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i355.PreviewNotificationPlanUseCase>(
+      () => _i355.PreviewNotificationPlanUseCase(
+        gh<_i233.SettingsRepository>(),
+        gh<_i297.ReminderRepository>(),
+        gh<_i819.NotificationScheduler>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i355.KeepNotificationsInSyncUseCase>(
+      () => _i355.KeepNotificationsInSyncUseCase(
+        gh<_i355.SyncNotificationsUseCase>(),
+        gh<_i297.ReminderRepository>(),
+        gh<_i233.SettingsRepository>(),
       ),
     );
     gh.factory<_i272.SettingsCubit>(
@@ -321,36 +408,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i27.UpdateThemeModeUseCase>(),
         gh<_i27.UpdateDynamicColorUseCase>(),
         gh<_i27.UpdatePreferredCityUseCase>(),
+        gh<_i355.UpdateReminderLeadUseCase>(),
+        gh<_i355.UpdateSummaryUseCase>(),
         gh<_i94.DeviceColors>(),
       ),
     );
-    gh.lazySingleton<_i182.DemoRepository>(
-      () => _i936.DemoRepositoryImpl(
-        gh<_i844.EventlyApi>(),
-        gh<_i542.UserDataDao>(),
-      ),
-    );
-    gh.lazySingleton<_i405.DeveloperTools>(
-      () => _i520.FakeDeveloperTools(
+    gh.lazySingleton<_i796.FakeEventlyApi>(
+      () => _i796.FakeEventlyApi(
+        gh<_i1000.AssetJsonLoader>(),
         gh<_i1024.NetworkSimulator>(),
-        gh<_i796.FakeEventlyApi>(),
+        gh<_i454.Clock>(),
+        gh<_i102.DemoCalendar>(),
       ),
     );
     gh.factory<_i514.FollowingCubit>(
       () => _i514.FollowingCubit(gh<_i148.WatchFollowingUseCase>()),
-    );
-    gh.lazySingleton<_i521.CatalogRepository>(
-      () => _i507.CatalogRepositoryImpl(
-        gh<_i844.EventlyApi>(),
-        gh<_i601.CatalogDao>(),
-        gh<_i386.EventsDao>(),
-      ),
-    );
-    gh.factory<_i1009.StartWithDemoUseCase>(
-      () => _i1009.StartWithDemoUseCase(
-        gh<_i182.DemoRepository>(),
-        gh<_i233.SettingsRepository>(),
-      ),
     );
     gh.factory<_i820.SearchBloc>(
       () => _i820.SearchBloc(
@@ -362,10 +434,29 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i805.EventClock>(),
       ),
     );
-    gh.factory<_i27.ResetDemoDataUseCase>(
-      () => _i27.ResetDemoDataUseCase(
-        gh<_i521.CatalogRepository>(),
+    gh.lazySingleton<_i844.EventlyApi>(
+      () => appModule.api(gh<_i796.FakeEventlyApi>()),
+    );
+    gh.lazySingleton<_i405.DeveloperTools>(
+      () => _i520.FakeDeveloperTools(
+        gh<_i1024.NetworkSimulator>(),
+        gh<_i796.FakeEventlyApi>(),
+        gh<_i102.DemoCalendar>(),
+      ),
+    );
+    gh.factory<_i27.DeveloperToolsUseCase>(
+      () => _i27.DeveloperToolsUseCase(gh<_i405.DeveloperTools>()),
+    );
+    gh.lazySingleton<_i182.DemoRepository>(
+      () => _i936.DemoRepositoryImpl(
+        gh<_i844.EventlyApi>(),
+        gh<_i542.UserDataDao>(),
+      ),
+    );
+    gh.factory<_i1009.StartWithDemoUseCase>(
+      () => _i1009.StartWithDemoUseCase(
         gh<_i182.DemoRepository>(),
+        gh<_i233.SettingsRepository>(),
       ),
     );
     gh.lazySingleton<_i435.BookingRepository>(
@@ -375,17 +466,34 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i454.Clock>(),
       ),
     );
-    gh.factory<_i27.DeveloperToolsUseCase>(
-      () => _i27.DeveloperToolsUseCase(gh<_i405.DeveloperTools>()),
+    gh.lazySingleton<_i521.CatalogRepository>(
+      () => _i507.CatalogRepositoryImpl(
+        gh<_i844.EventlyApi>(),
+        gh<_i601.CatalogDao>(),
+        gh<_i386.EventsDao>(),
+        gh<_i627.RemindersDao>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i997.RefreshCatalogUseCase>(
+      () => _i997.RefreshCatalogUseCase(
+        gh<_i521.CatalogRepository>(),
+        gh<_i355.AlertCatalogChangesUseCase>(),
+      ),
+    );
+    gh.factory<_i217.RsvpEventUseCase>(
+      () => _i217.RsvpEventUseCase(
+        gh<_i521.CatalogRepository>(),
+        gh<_i435.BookingRepository>(),
+        gh<_i805.EventClock>(),
+        gh<_i355.ShowRsvpConfirmationUseCase>(),
+      ),
     );
     gh.factory<_i217.WatchTicketsUseCase>(
       () => _i217.WatchTicketsUseCase(gh<_i435.BookingRepository>()),
     );
     gh.factory<_i217.WatchTicketUseCase>(
       () => _i217.WatchTicketUseCase(gh<_i435.BookingRepository>()),
-    );
-    gh.factory<_i997.RefreshCatalogUseCase>(
-      () => _i997.RefreshCatalogUseCase(gh<_i521.CatalogRepository>()),
     );
     gh.factory<_i997.ListCitiesUseCase>(
       () => _i997.ListCitiesUseCase(gh<_i521.CatalogRepository>()),
@@ -399,16 +507,33 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i27.ClearCacheUseCase>(
       () => _i27.ClearCacheUseCase(gh<_i521.CatalogRepository>()),
     );
-    gh.factory<_i217.RsvpEventUseCase>(
-      () => _i217.RsvpEventUseCase(
+    gh.factory<_i246.RunBackgroundSyncUseCase>(
+      () => _i246.RunBackgroundSyncUseCase(
         gh<_i521.CatalogRepository>(),
-        gh<_i435.BookingRepository>(),
-        gh<_i805.EventClock>(),
+        gh<_i355.AlertCatalogChangesUseCase>(),
+        gh<_i355.SyncNotificationsUseCase>(),
+      ),
+    );
+    gh.factory<_i27.ResetDemoDataUseCase>(
+      () => _i27.ResetDemoDataUseCase(
+        gh<_i521.CatalogRepository>(),
+        gh<_i182.DemoRepository>(),
+        gh<_i405.DeveloperTools>(),
       ),
     );
     gh.factory<_i217.CancelRsvpUseCase>(
       () => _i217.CancelRsvpUseCase(
         gh<_i435.BookingRepository>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i186.EventDetailCubit>(
+      () => _i186.EventDetailCubit(
+        gh<_i351.WatchEventDetailsUseCase>(),
+        gh<_i351.SetEventSavedUseCase>(),
+        gh<_i355.SetEventReminderUseCase>(),
+        gh<_i27.WatchSettingsUseCase>(),
+        gh<_i860.OpenLinkUseCase>(),
         gh<_i805.EventClock>(),
       ),
     );
@@ -436,17 +561,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1009.StartFreshUseCase>(),
       ),
     );
+    gh.factory<_i263.SettingsToolsCubit>(
+      () => _i263.SettingsToolsCubit(
+        gh<_i997.ListCitiesUseCase>(),
+        gh<_i27.ClearCacheUseCase>(),
+        gh<_i27.ResetDemoDataUseCase>(),
+        gh<_i27.DeveloperToolsUseCase>(),
+        gh<_i355.SetNotificationsEnabledUseCase>(),
+        gh<_i355.OpenNotificationSettingsUseCase>(),
+        gh<_i246.RunBackgroundSyncUseCase>(),
+        gh<_i355.PreviewNotificationPlanUseCase>(),
+      ),
+    );
     gh.factory<_i220.TicketsCubit>(
       () => _i220.TicketsCubit(
         gh<_i217.WatchTicketsUseCase>(),
-        gh<_i805.EventClock>(),
-      ),
-    );
-    gh.factory<_i186.EventDetailCubit>(
-      () => _i186.EventDetailCubit(
-        gh<_i351.WatchEventDetailsUseCase>(),
-        gh<_i351.SetEventSavedUseCase>(),
-        gh<_i860.OpenLinkUseCase>(),
         gh<_i805.EventClock>(),
       ),
     );
@@ -455,14 +584,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i351.WatchEventDetailsUseCase>(),
         gh<_i217.RsvpEventUseCase>(),
         gh<_i805.EventClock>(),
-      ),
-    );
-    gh.factory<_i263.SettingsToolsCubit>(
-      () => _i263.SettingsToolsCubit(
-        gh<_i997.ListCitiesUseCase>(),
-        gh<_i27.ClearCacheUseCase>(),
-        gh<_i27.ResetDemoDataUseCase>(),
-        gh<_i27.DeveloperToolsUseCase>(),
       ),
     );
     return this;

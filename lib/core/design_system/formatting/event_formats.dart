@@ -2,12 +2,14 @@ import 'package:evently/domain/calculation/rsvp_rules.dart';
 import 'package:evently/domain/model/calendar_date.dart';
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/domain/model/event_time.dart';
+import 'package:evently/domain/model/time_of_day_value.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// How events read on screen. Formatting lives here, never in the domain:
 /// the model holds instants and a zone, and the screen picks which zone to
-/// tell them in.
+/// tell them in. (A notification's words are the exception: they are part
+/// of the plan the sync compares, see `planNotifications`.)
 abstract final class EventFormats {
   /// A list's day heading, in the user's calendar: "Today", "Tomorrow",
   /// "Sat, 31 Oct", and the year when it isn't this year's.
@@ -151,6 +153,11 @@ abstract final class EventFormats {
     RsvpBlock.started => 'Bookings closed when it started',
     RsvpBlock.soldOut => 'Sold out',
   };
+
+  /// A time of day from Settings, on the user's clock style: "08:00" or
+  /// "8:00 AM".
+  static String time(TimeOfDayValue time, {required bool use24HourFormat}) =>
+      _clock(DateTime(2026, 1, 1, time.hour, time.minute), use24HourFormat);
 
   static String _date(DateTime local) => DateFormat('EEE d MMM').format(local);
 

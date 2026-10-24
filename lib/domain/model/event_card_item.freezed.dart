@@ -16,7 +16,9 @@ T _$identity<T>(T value) => value;
 mixin _$EventCardItem {
 
  Event get event; String get organizerName; bool get isSaved;/// You hold an active ticket.
- bool get isGoing;
+ bool get isGoing;/// Your choice on the event's reminder toggle; `null` until you touch
+/// it, when the default applies.
+ bool? get reminderChoice;
 /// Create a copy of EventCardItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,20 +30,20 @@ $EventCardItemCopyWith<EventCardItem> get copyWith => _$EventCardItemCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as EventCardItem;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventCardItem&&(identical(other.event, _this.event) || other.event == _this.event)&&(identical(other.organizerName, _this.organizerName) || other.organizerName == _this.organizerName)&&(identical(other.isSaved, _this.isSaved) || other.isSaved == _this.isSaved)&&(identical(other.isGoing, _this.isGoing) || other.isGoing == _this.isGoing));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventCardItem&&(identical(other.event, _this.event) || other.event == _this.event)&&(identical(other.organizerName, _this.organizerName) || other.organizerName == _this.organizerName)&&(identical(other.isSaved, _this.isSaved) || other.isSaved == _this.isSaved)&&(identical(other.isGoing, _this.isGoing) || other.isGoing == _this.isGoing)&&(identical(other.reminderChoice, _this.reminderChoice) || other.reminderChoice == _this.reminderChoice));
 }
 
 
 @override
 int get hashCode {
   final _this = this as EventCardItem;
-  return Object.hash(runtimeType,_this.event,_this.organizerName,_this.isSaved,_this.isGoing);
+  return Object.hash(runtimeType,_this.event,_this.organizerName,_this.isSaved,_this.isGoing,_this.reminderChoice);
 }
 
 @override
 String toString() {
   final _this = this as EventCardItem;
-  return 'EventCardItem(event: ${_this.event}, organizerName: ${_this.organizerName}, isSaved: ${_this.isSaved}, isGoing: ${_this.isGoing})';
+  return 'EventCardItem(event: ${_this.event}, organizerName: ${_this.organizerName}, isSaved: ${_this.isSaved}, isGoing: ${_this.isGoing}, reminderChoice: ${_this.reminderChoice})';
 }
 
 
@@ -52,7 +54,7 @@ abstract mixin class $EventCardItemCopyWith<$Res>  {
   factory $EventCardItemCopyWith(EventCardItem value, $Res Function(EventCardItem) _then) = _$EventCardItemCopyWithImpl;
 @useResult
 $Res call({
- Event event, String organizerName, bool isSaved, bool isGoing
+ Event event, String organizerName, bool isSaved, bool isGoing, bool? reminderChoice
 });
 
 
@@ -69,13 +71,14 @@ class _$EventCardItemCopyWithImpl<$Res>
 
 /// Create a copy of EventCardItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? event = null,Object? organizerName = null,Object? isSaved = null,Object? isGoing = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? event = null,Object? organizerName = null,Object? isSaved = null,Object? isGoing = null,Object? reminderChoice = freezed,}) {
   return _then(EventCardItem(
 event: null == event ? _self.event : event // ignore: cast_nullable_to_non_nullable
 as Event,organizerName: null == organizerName ? _self.organizerName : organizerName // ignore: cast_nullable_to_non_nullable
 as String,isSaved: null == isSaved ? _self.isSaved : isSaved // ignore: cast_nullable_to_non_nullable
 as bool,isGoing: null == isGoing ? _self.isGoing : isGoing // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,reminderChoice: freezed == reminderChoice ? _self.reminderChoice : reminderChoice // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 /// Create a copy of EventCardItem
@@ -169,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Event event,  String organizerName,  bool isSaved,  bool isGoing)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Event event,  String organizerName,  bool isSaved,  bool isGoing,  bool? reminderChoice)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EventCardItem() when $default != null:
-return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);case _:
+return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing,_that.reminderChoice);case _:
   return orElse();
 
 }
@@ -190,10 +193,10 @@ return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Event event,  String organizerName,  bool isSaved,  bool isGoing)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Event event,  String organizerName,  bool isSaved,  bool isGoing,  bool? reminderChoice)  $default,) {final _that = this;
 switch (_that) {
 case _EventCardItem():
-return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);case _:
+return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing,_that.reminderChoice);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +213,10 @@ return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Event event,  String organizerName,  bool isSaved,  bool isGoing)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Event event,  String organizerName,  bool isSaved,  bool isGoing,  bool? reminderChoice)?  $default,) {final _that = this;
 switch (_that) {
 case _EventCardItem() when $default != null:
-return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);case _:
+return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing,_that.reminderChoice);case _:
   return null;
 
 }
@@ -224,8 +227,8 @@ return $default(_that.event,_that.organizerName,_that.isSaved,_that.isGoing);cas
 /// @nodoc
 
 
-class _EventCardItem implements EventCardItem {
-  const _EventCardItem({required this.event, required this.organizerName, this.isSaved = false, this.isGoing = false});
+class _EventCardItem extends EventCardItem {
+  const _EventCardItem({required this.event, required this.organizerName, this.isSaved = false, this.isGoing = false, this.reminderChoice}): super._();
   
 
 @override final  Event event;
@@ -233,6 +236,9 @@ class _EventCardItem implements EventCardItem {
 @override@JsonKey() final  bool isSaved;
 /// You hold an active ticket.
 @override@JsonKey() final  bool isGoing;
+/// Your choice on the event's reminder toggle; `null` until you touch
+/// it, when the default applies.
+@override final  bool? reminderChoice;
 
 /// Create a copy of EventCardItem
 /// with the given fields replaced by the non-null parameter values.
@@ -244,18 +250,18 @@ _$EventCardItemCopyWith<_EventCardItem> get copyWith => __$EventCardItemCopyWith
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventCardItem&&(identical(other.event, event) || other.event == event)&&(identical(other.organizerName, organizerName) || other.organizerName == organizerName)&&(identical(other.isSaved, isSaved) || other.isSaved == isSaved)&&(identical(other.isGoing, isGoing) || other.isGoing == isGoing));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventCardItem&&(identical(other.event, event) || other.event == event)&&(identical(other.organizerName, organizerName) || other.organizerName == organizerName)&&(identical(other.isSaved, isSaved) || other.isSaved == isSaved)&&(identical(other.isGoing, isGoing) || other.isGoing == isGoing)&&(identical(other.reminderChoice, reminderChoice) || other.reminderChoice == reminderChoice));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,event,organizerName,isSaved,isGoing);
+    return Object.hash(runtimeType,event,organizerName,isSaved,isGoing,reminderChoice);
 }
 
 @override
 String toString() {
-    return 'EventCardItem(event: $event, organizerName: $organizerName, isSaved: $isSaved, isGoing: $isGoing)';
+    return 'EventCardItem(event: $event, organizerName: $organizerName, isSaved: $isSaved, isGoing: $isGoing, reminderChoice: $reminderChoice)';
 }
 
 
@@ -266,7 +272,7 @@ abstract mixin class _$EventCardItemCopyWith<$Res> implements $EventCardItemCopy
   factory _$EventCardItemCopyWith(_EventCardItem value, $Res Function(_EventCardItem) _then) = __$EventCardItemCopyWithImpl;
 @override @useResult
 $Res call({
- Event event, String organizerName, bool isSaved, bool isGoing
+ Event event, String organizerName, bool isSaved, bool isGoing, bool? reminderChoice
 });
 
 
@@ -283,13 +289,14 @@ class __$EventCardItemCopyWithImpl<$Res>
 
 /// Create a copy of EventCardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? event = null,Object? organizerName = null,Object? isSaved = null,Object? isGoing = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? event = null,Object? organizerName = null,Object? isSaved = null,Object? isGoing = null,Object? reminderChoice = freezed,}) {
   return _then(_EventCardItem(
 event: null == event ? _self.event : event // ignore: cast_nullable_to_non_nullable
 as Event,organizerName: null == organizerName ? _self.organizerName : organizerName // ignore: cast_nullable_to_non_nullable
 as String,isSaved: null == isSaved ? _self.isSaved : isSaved // ignore: cast_nullable_to_non_nullable
 as bool,isGoing: null == isGoing ? _self.isGoing : isGoing // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,reminderChoice: freezed == reminderChoice ? _self.reminderChoice : reminderChoice // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 

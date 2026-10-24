@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:clock/clock.dart';
 import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
@@ -8,21 +6,23 @@ import 'package:evently/core/database/daos/events_dao.dart';
 import 'package:evently/core/database/daos/organizers_dao.dart';
 import 'package:evently/core/database/daos/profile_dao.dart';
 import 'package:evently/core/database/daos/recent_searches_dao.dart';
+import 'package:evently/core/database/daos/reminders_dao.dart';
 import 'package:evently/core/database/daos/saved_events_dao.dart';
 import 'package:evently/core/database/daos/session_bookmarks_dao.dart';
 import 'package:evently/core/database/daos/tickets_dao.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
 import 'package:evently/core/network/evently_api.dart';
 import 'package:evently/core/network/fake_evently_api.dart';
+import 'package:evently/core/platform/device_time_zone_reader.dart';
+import 'package:evently/core/platform/local_notifications.dart';
 import 'package:evently/core/storage/settings_local_data_source.dart';
 import 'package:evently/domain/model/device_info.dart';
 import 'package:evently/domain/service/dynamic_color_source.dart';
+import 'package:evently/domain/service/notification_scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
 
 /// Registers types the app doesn't own, so they can be injected (and replaced
 /// in tests) like everything else.
@@ -74,6 +74,9 @@ abstract class AppModule {
       database.sessionBookmarksDao;
 
   @lazySingleton
+  RemindersDao remindersDao(AppDatabase database) => database.remindersDao;
+
+  @lazySingleton
   SavedEventsDao savedEventsDao(AppDatabase database) =>
       database.savedEventsDao;
 
@@ -90,20 +93,25 @@ abstract class AppModule {
       );
 
   /// The device's time zone, before the first frame: Discover's "Today"
-  /// is the user's day. `main` loads the zone database first. A zone the
-  /// database doesn't know (or a platform error) falls back to UTC rather
-  /// than stopping the app.
+  /// is the user's day. `main` loads the zone database first.
   @preResolve
   @lazySingleton
-  Future<DeviceTimeZone> get deviceTimeZone async {
-    try {
-      final zone = await FlutterTimezone.getLocalTimezone();
-      return DeviceTimeZone(tz.getLocation(zone.identifier));
-    } on Object catch (error, stackTrace) {
-      log('Reading the time zone failed', error: error, stackTrace: stackTrace);
-      return DeviceTimeZone(tz.UTC);
-    }
-  }
+  Future<DeviceTimeZone> get deviceTimeZone => readDeviceTimeZone();
+
+  /// One plugin wrapper for the app, under both of its roles: scheduling
+  /// notifications, and reporting taps. The background isolate builds its
+  /// own (`BackgroundGraph`).
+  @lazySingleton
+  LocalNotifications get localNotifications => LocalNotifications();
+
+  @lazySingleton
+  NotificationScheduler notificationScheduler(LocalNotifications plugin) =>
+      plugin;
+
+  @lazySingleton
+  NotificationInteractions notificationInteractions(
+    LocalNotifications plugin,
+  ) => plugin;
 
   /// Read once before the first frame, like the preferences: About and
   /// Settings show the version without a loading state.

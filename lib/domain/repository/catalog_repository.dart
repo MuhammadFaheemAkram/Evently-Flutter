@@ -5,8 +5,10 @@ import 'package:evently/domain/model/event_details.dart';
 /// The event catalog: fetched from the API, cached in drift. Screens watch
 /// the cache; only [refresh] talks to the API.
 abstract interface class CatalogRepository {
-  /// Fetches the catalog and writes it over the cache in one transaction;
-  /// the number of events it holds. On any failure the cache is as it was.
+  /// Fetches the catalog and writes it over the cache in one transaction,
+  /// recording the moves and cancellations of events the user holds tickets
+  /// for (for the change alerts); the number of events it holds. On any
+  /// failure the cache is as it was.
   Future<Result<int>> refresh();
 
   /// Deletes the cached events nothing of the user's points at; how many

@@ -1,6 +1,7 @@
 import 'package:evently/core/common/app_exception.dart';
 import 'package:evently/data/mapper/user_data_mappers.dart';
 import 'package:evently/domain/calculation/rsvp_rules.dart';
+import 'package:evently/domain/model/app_settings.dart';
 import 'package:evently/features/event_detail/cubit/event_detail_cubit.dart';
 import 'package:evently/features/event_detail/cubit/event_detail_state.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +22,8 @@ void main() {
     final cubit = EventDetailCubit(
       stack.watchEventDetails,
       stack.setEventSaved,
+      stack.setEventReminder,
+      stack.watchSettings,
       stack.openLink,
       stack.eventClock,
     )..load(eventId);
@@ -132,6 +135,47 @@ void main() {
 
       expect(cubit.state.message, const LinkOpenFailedException().message);
       expect(cubit.state.messageSerial, 1);
+    });
+  });
+
+  group('the reminder', () {
+    test('the notification settings come with the event, and follow '
+        'changes', () async {
+      final cubit = await opened('ev_jazz_vaults');
+      expect(cubit.state.notificationsEnabled, isFalse);
+      expect(cubit.state.reminderLead, ReminderLead.oneHour);
+
+      await stack.settings.update(
+        (s) => s.copyWith(
+          notificationsEnabled: true,
+          reminderLead: ReminderLead.oneDay,
+        ),
+      );
+
+      expect(cubit.state.notificationsEnabled, isTrue);
+      expect(cubit.state.reminderLead, ReminderLead.oneDay);
+    });
+
+    test('a saved event: turned on, kept, and shown', () async {
+      final cubit = await opened('ev_jazz_vaults');
+      expect(cubit.state.showsReminder, isTrue);
+      expect(cubit.state.details!.item.hasReminder, isFalse);
+
+      await cubit.setReminder(enabled: true);
+      await waitFor(cubit, (s) => s.details!.item.hasReminder);
+
+      expect(cubit.state.details!.item.reminderChoice, isTrue);
+    });
+
+    test('an event you neither saved nor booked has none, and says '
+        'why if asked', () async {
+      final cubit = await opened('ev_thames_10k');
+      expect(cubit.state.details!.item.canHaveReminder, isFalse);
+      expect(cubit.state.showsReminder, isFalse);
+
+      await cubit.setReminder(enabled: true);
+
+      expect(cubit.state.message, 'Save the event or RSVP to get a reminder.');
     });
   });
 }

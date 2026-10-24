@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:clock/clock.dart';
 import 'package:evently/core/common/app_exception.dart';
 import 'package:evently/core/network/asset_json_loader.dart';
+import 'package:evently/core/network/demo_calendar.dart';
 import 'package:evently/core/network/dto/booking_dto.dart';
 import 'package:evently/core/network/dto/catalog_dto.dart';
 import 'package:evently/core/network/dto/demo_user_dto.dart';
@@ -13,8 +14,9 @@ import 'package:evently/domain/calculation/ticket_codes.dart';
 import 'package:evently/domain/model/event_enums.dart';
 import 'package:injectable/injectable.dart';
 
-/// Plays the server: renders its seed files as of now ([SeedRenderer])
-/// after a simulated network delay (700 ms) that can also fail on request.
+/// Plays the server: renders its seed files from its calendar's anchor
+/// ([SeedRenderer], [DemoCalendar]) after a simulated network delay
+/// (700 ms) that can also fail on request.
 ///
 /// It also keeps the server's own state, in memory, reset on every launch
 /// (a fake backend only shows how the app talks to one):
@@ -31,7 +33,8 @@ class FakeEventlyApi implements EventlyApi {
   FakeEventlyApi(
     this._json,
     this._network,
-    this._clock, {
+    this._clock,
+    this._calendar, {
     @ignoreParam Random? random,
   }) : _random = random ?? Random();
 
@@ -42,6 +45,7 @@ class FakeEventlyApi implements EventlyApi {
   final AssetJsonLoader _json;
   final NetworkSimulator _network;
   final Clock _clock;
+  final DemoCalendar _calendar;
   final Random _random;
 
   /// Places taken since launch, by "eventId/type".
@@ -77,7 +81,7 @@ class FakeEventlyApi implements EventlyApi {
     await _network();
     final seed = await _json.loadObject(demoUserPath);
     final user = DemoUserDto.fromJson(
-      SeedRenderer.demoUser(seed, _clock.now()),
+      SeedRenderer.demoUser(seed, _calendar.anchor()),
     );
     // The demo's tickets were "issued" by this server: the seed's places
     // left already count them.
@@ -146,20 +150,20 @@ class FakeEventlyApi implements EventlyApi {
     _taken[key] = (_taken[key] ?? 0) + places;
   }
 
-  /// The catalog as of now: the seed (with the update, once published),
-  /// and the places taken since launch.
+  /// The catalog: the seed from the calendar's anchor (with the update,
+  /// once published), and the places taken since launch.
   Future<Map<String, dynamic>> _catalogJson() async {
     final seed = await _json.loadObject(catalogPath);
-    final now = _clock.now();
+    final anchor = _calendar.anchor();
     final Map<String, dynamic> catalog;
     if (_updated) {
       // Where the moved events were, before they moved.
-      final before = _byId(SeedRenderer.catalog(seed, now));
+      final before = _byId(SeedRenderer.catalog(seed, anchor));
       final update = await _json.loadObject(updatePath);
-      catalog = SeedRenderer.catalog(_applyUpdate(seed, update), now);
+      catalog = SeedRenderer.catalog(_applyUpdate(seed, update), anchor);
       _markChanges(catalog, update, before);
     } else {
-      catalog = SeedRenderer.catalog(seed, now);
+      catalog = SeedRenderer.catalog(seed, anchor);
     }
     for (final event in _events(catalog)) {
       final offers = _offers(event);

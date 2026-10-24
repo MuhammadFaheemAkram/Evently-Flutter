@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/database.dart';
+import '../../helpers/fakes/memory_demo_calendar.dart';
 import '../../helpers/test_dependencies.dart';
 
 // The seed files that ship with the app, rendered as the fake API renders
@@ -24,6 +25,7 @@ void main() {
       AssetJsonLoader(rootBundle),
       NetworkSimulator(latency: Duration.zero),
       Clock.fixed(now),
+      MemoryDemoCalendar(Clock.fixed(now)),
     );
     return (
       (await api.fetchCatalog()).toCatalog(),

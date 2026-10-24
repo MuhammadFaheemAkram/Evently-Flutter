@@ -1,9 +1,13 @@
 import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/network/evently_api.dart';
 import 'package:evently/core/network/fake_evently_api.dart';
+import 'package:evently/core/platform/local_notifications.dart';
 import 'package:evently/di/injection.dart';
 import 'package:evently/domain/model/device_info.dart';
 import 'package:evently/domain/repository/settings_repository.dart';
+import 'package:evently/domain/service/notification_scheduler.dart';
+import 'package:evently/domain/usecase/background_use_cases.dart';
+import 'package:evently/domain/usecase/notification_use_cases.dart';
 import 'package:evently/features/agenda/cubit/agenda_cubit.dart';
 import 'package:evently/features/discover/cubit/discover_cubit.dart';
 import 'package:evently/features/event_detail/cubit/event_detail_cubit.dart';
@@ -55,5 +59,23 @@ void main() {
     expect(getIt<AppInfo>().versionLabel, '1.0.0 (1)');
     expect(getIt<EventlyApi>(), same(getIt<FakeEventlyApi>()));
     expect(getIt<EventClock>().local.name, 'Europe/London');
+    expect(
+      getIt<SyncNotificationsUseCase>(),
+      same(getIt<SyncNotificationsUseCase>()),
+    );
+    expect(getIt<KeepNotificationsInSyncUseCase>(), isNotNull);
+    expect(getIt<RunBackgroundSyncUseCase>(), isNotNull);
+  });
+
+  test('one plugin wrapper serves both notification roles', () async {
+    // The test graph swaps the device for a fake: set its platform mocks
+    // up, then build the real graph again over them.
+    await configureTestDependencies();
+    await getIt.reset();
+    await configureDependencies();
+
+    final plugin = getIt<LocalNotifications>();
+    expect(getIt<NotificationScheduler>(), same(plugin));
+    expect(getIt<NotificationInteractions>(), same(plugin));
   });
 }

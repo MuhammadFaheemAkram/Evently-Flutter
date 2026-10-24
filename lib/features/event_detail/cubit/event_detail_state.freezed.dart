@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$EventDetailState {
 
  EventDetailStatus get status; EventDetails? get details;/// What "can I book it" was judged against.
- DateTime? get now;/// A one-time SnackBar (a link that wouldn't open, a failed save);
+ DateTime? get now;/// From Settings, for the reminder toggle.
+ bool get notificationsEnabled; ReminderLead get reminderLead;/// A one-time SnackBar (a link that wouldn't open, a failed save);
 /// [messageSerial] makes each one distinct.
  String? get message; int get messageSerial;
 /// Create a copy of EventDetailState
@@ -30,20 +31,20 @@ $EventDetailStateCopyWith<EventDetailState> get copyWith => _$EventDetailStateCo
 @override
 bool operator ==(Object other) {
   final _this = this as EventDetailState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventDetailState&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.details, _this.details) || other.details == _this.details)&&(identical(other.now, _this.now) || other.now == _this.now)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.messageSerial, _this.messageSerial) || other.messageSerial == _this.messageSerial));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EventDetailState&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.details, _this.details) || other.details == _this.details)&&(identical(other.now, _this.now) || other.now == _this.now)&&(identical(other.notificationsEnabled, _this.notificationsEnabled) || other.notificationsEnabled == _this.notificationsEnabled)&&(identical(other.reminderLead, _this.reminderLead) || other.reminderLead == _this.reminderLead)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.messageSerial, _this.messageSerial) || other.messageSerial == _this.messageSerial));
 }
 
 
 @override
 int get hashCode {
   final _this = this as EventDetailState;
-  return Object.hash(runtimeType,_this.status,_this.details,_this.now,_this.message,_this.messageSerial);
+  return Object.hash(runtimeType,_this.status,_this.details,_this.now,_this.notificationsEnabled,_this.reminderLead,_this.message,_this.messageSerial);
 }
 
 @override
 String toString() {
   final _this = this as EventDetailState;
-  return 'EventDetailState(status: ${_this.status}, details: ${_this.details}, now: ${_this.now}, message: ${_this.message}, messageSerial: ${_this.messageSerial})';
+  return 'EventDetailState(status: ${_this.status}, details: ${_this.details}, now: ${_this.now}, notificationsEnabled: ${_this.notificationsEnabled}, reminderLead: ${_this.reminderLead}, message: ${_this.message}, messageSerial: ${_this.messageSerial})';
 }
 
 
@@ -54,7 +55,7 @@ abstract mixin class $EventDetailStateCopyWith<$Res>  {
   factory $EventDetailStateCopyWith(EventDetailState value, $Res Function(EventDetailState) _then) = _$EventDetailStateCopyWithImpl;
 @useResult
 $Res call({
- EventDetailStatus status, EventDetails? details, DateTime? now, String? message, int messageSerial
+ EventDetailStatus status, EventDetails? details, DateTime? now, bool notificationsEnabled, ReminderLead reminderLead, String? message, int messageSerial
 });
 
 
@@ -71,12 +72,14 @@ class _$EventDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of EventDetailState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? details = freezed,Object? now = freezed,Object? message = freezed,Object? messageSerial = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? details = freezed,Object? now = freezed,Object? notificationsEnabled = null,Object? reminderLead = null,Object? message = freezed,Object? messageSerial = null,}) {
   return _then(EventDetailState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as EventDetailStatus,details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as EventDetails?,now: freezed == now ? _self.now : now // ignore: cast_nullable_to_non_nullable
-as DateTime?,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as DateTime?,notificationsEnabled: null == notificationsEnabled ? _self.notificationsEnabled : notificationsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,reminderLead: null == reminderLead ? _self.reminderLead : reminderLead // ignore: cast_nullable_to_non_nullable
+as ReminderLead,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String?,messageSerial: null == messageSerial ? _self.messageSerial : messageSerial // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -175,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  String? message,  int messageSerial)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  bool notificationsEnabled,  ReminderLead reminderLead,  String? message,  int messageSerial)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EventDetailState() when $default != null:
-return $default(_that.status,_that.details,_that.now,_that.message,_that.messageSerial);case _:
+return $default(_that.status,_that.details,_that.now,_that.notificationsEnabled,_that.reminderLead,_that.message,_that.messageSerial);case _:
   return orElse();
 
 }
@@ -196,10 +199,10 @@ return $default(_that.status,_that.details,_that.now,_that.message,_that.message
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  String? message,  int messageSerial)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  bool notificationsEnabled,  ReminderLead reminderLead,  String? message,  int messageSerial)  $default,) {final _that = this;
 switch (_that) {
 case _EventDetailState():
-return $default(_that.status,_that.details,_that.now,_that.message,_that.messageSerial);case _:
+return $default(_that.status,_that.details,_that.now,_that.notificationsEnabled,_that.reminderLead,_that.message,_that.messageSerial);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +219,10 @@ return $default(_that.status,_that.details,_that.now,_that.message,_that.message
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  String? message,  int messageSerial)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( EventDetailStatus status,  EventDetails? details,  DateTime? now,  bool notificationsEnabled,  ReminderLead reminderLead,  String? message,  int messageSerial)?  $default,) {final _that = this;
 switch (_that) {
 case _EventDetailState() when $default != null:
-return $default(_that.status,_that.details,_that.now,_that.message,_that.messageSerial);case _:
+return $default(_that.status,_that.details,_that.now,_that.notificationsEnabled,_that.reminderLead,_that.message,_that.messageSerial);case _:
   return null;
 
 }
@@ -231,13 +234,16 @@ return $default(_that.status,_that.details,_that.now,_that.message,_that.message
 
 
 class _EventDetailState extends EventDetailState {
-  const _EventDetailState({this.status = EventDetailStatus.loading, this.details, this.now, this.message, this.messageSerial = 0}): super._();
+  const _EventDetailState({this.status = EventDetailStatus.loading, this.details, this.now, this.notificationsEnabled = false, this.reminderLead = ReminderLead.oneHour, this.message, this.messageSerial = 0}): super._();
   
 
 @override@JsonKey() final  EventDetailStatus status;
 @override final  EventDetails? details;
 /// What "can I book it" was judged against.
 @override final  DateTime? now;
+/// From Settings, for the reminder toggle.
+@override@JsonKey() final  bool notificationsEnabled;
+@override@JsonKey() final  ReminderLead reminderLead;
 /// A one-time SnackBar (a link that wouldn't open, a failed save);
 /// [messageSerial] makes each one distinct.
 @override final  String? message;
@@ -253,18 +259,18 @@ _$EventDetailStateCopyWith<_EventDetailState> get copyWith => __$EventDetailStat
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventDetailState&&(identical(other.status, status) || other.status == status)&&(identical(other.details, details) || other.details == details)&&(identical(other.now, now) || other.now == now)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageSerial, messageSerial) || other.messageSerial == messageSerial));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EventDetailState&&(identical(other.status, status) || other.status == status)&&(identical(other.details, details) || other.details == details)&&(identical(other.now, now) || other.now == now)&&(identical(other.notificationsEnabled, notificationsEnabled) || other.notificationsEnabled == notificationsEnabled)&&(identical(other.reminderLead, reminderLead) || other.reminderLead == reminderLead)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageSerial, messageSerial) || other.messageSerial == messageSerial));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,status,details,now,message,messageSerial);
+    return Object.hash(runtimeType,status,details,now,notificationsEnabled,reminderLead,message,messageSerial);
 }
 
 @override
 String toString() {
-    return 'EventDetailState(status: $status, details: $details, now: $now, message: $message, messageSerial: $messageSerial)';
+    return 'EventDetailState(status: $status, details: $details, now: $now, notificationsEnabled: $notificationsEnabled, reminderLead: $reminderLead, message: $message, messageSerial: $messageSerial)';
 }
 
 
@@ -275,7 +281,7 @@ abstract mixin class _$EventDetailStateCopyWith<$Res> implements $EventDetailSta
   factory _$EventDetailStateCopyWith(_EventDetailState value, $Res Function(_EventDetailState) _then) = __$EventDetailStateCopyWithImpl;
 @override @useResult
 $Res call({
- EventDetailStatus status, EventDetails? details, DateTime? now, String? message, int messageSerial
+ EventDetailStatus status, EventDetails? details, DateTime? now, bool notificationsEnabled, ReminderLead reminderLead, String? message, int messageSerial
 });
 
 
@@ -292,12 +298,14 @@ class __$EventDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of EventDetailState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? details = freezed,Object? now = freezed,Object? message = freezed,Object? messageSerial = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? details = freezed,Object? now = freezed,Object? notificationsEnabled = null,Object? reminderLead = null,Object? message = freezed,Object? messageSerial = null,}) {
   return _then(_EventDetailState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as EventDetailStatus,details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as EventDetails?,now: freezed == now ? _self.now : now // ignore: cast_nullable_to_non_nullable
-as DateTime?,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as DateTime?,notificationsEnabled: null == notificationsEnabled ? _self.notificationsEnabled : notificationsEnabled // ignore: cast_nullable_to_non_nullable
+as bool,reminderLead: null == reminderLead ? _self.reminderLead : reminderLead // ignore: cast_nullable_to_non_nullable
+as ReminderLead,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String?,messageSerial: null == messageSerial ? _self.messageSerial : messageSerial // ignore: cast_nullable_to_non_nullable
 as int,
   ));

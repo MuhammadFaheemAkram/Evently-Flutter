@@ -12,6 +12,7 @@ mixin _$EventsDaoMixin on DatabaseAccessor<AppDatabase> {
   $SessionsTable get sessions => attachedDatabase.sessions;
   $SavedEventsTable get savedEvents => attachedDatabase.savedEvents;
   $TicketsTable get tickets => attachedDatabase.tickets;
+  $EventRemindersTable get eventReminders => attachedDatabase.eventReminders;
   EventsDaoManager get managers => EventsDaoManager(this);
 }
 
@@ -30,4 +31,9 @@ class EventsDaoManager {
       $$SavedEventsTableTableManager(_db.attachedDatabase, _db.savedEvents);
   $$TicketsTableTableManager get tickets =>
       $$TicketsTableTableManager(_db.attachedDatabase, _db.tickets);
+  $$EventRemindersTableTableManager get eventReminders =>
+      $$EventRemindersTableTableManager(
+        _db.attachedDatabase,
+        _db.eventReminders,
+      );
 }

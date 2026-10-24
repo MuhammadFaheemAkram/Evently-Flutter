@@ -3,13 +3,14 @@ import 'package:evently/domain/model/time_of_day_value.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// The fake server's templates, rendered into the JSON a real API would
-/// send, as of [now].
+/// send, as of [now] (the server passes its calendar's anchor, so the
+/// events don't move from one day to the next: `DemoCalendar`).
 ///
 /// The seed files describe events the way people plan them: "in 3 days at
 /// 18:30, in London". Rendering turns that into what goes over the wire:
 /// ISO-8601 instants with the venue's offset ("…T18:30:00.000+0100"), so
-/// the demo always has events today, this weekend and next month, and a
-/// few past ones, whatever the date. "In 3 days" counts from the *venue's*
+/// a fresh demo has events today, this weekend and next month, and a few
+/// past ones, whatever the date. "In 3 days" counts from the *venue's*
 /// today: at 01:00 in London it's already tomorrow in Lahore.
 ///
 /// It also does what a server would compute: an event's attendee count and

@@ -11,6 +11,7 @@ import 'package:evently/domain/model/event_enums.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/fakes/memory_demo_calendar.dart';
 import '../../helpers/test_dependencies.dart';
 
 // The fake server's own state: places taken and tickets issued, checked on
@@ -27,6 +28,7 @@ void main() {
       AssetJsonLoader(rootBundle),
       network,
       Clock.fixed(demoNow),
+      MemoryDemoCalendar(Clock.fixed(demoNow)),
       random: Random(1),
     );
   });

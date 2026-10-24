@@ -57,17 +57,20 @@ class ClearCacheUseCase {
   Future<Result<int>> call() => _catalog.clearCache();
 }
 
-/// Settings → Reset demo data: the catalog fetched again (the demo points
-/// at its events), then the demo user's data written over the user's, in
-/// one transaction. Offline, nothing changes.
+/// Settings → Reset demo data: the server's calendar starts again from
+/// today, the catalog is fetched again (the demo points at its events),
+/// then the demo user's data is written over the user's, in one
+/// transaction. Offline, the user's data stays as it was.
 @injectable
 class ResetDemoDataUseCase {
-  const ResetDemoDataUseCase(this._catalog, this._demo);
+  const ResetDemoDataUseCase(this._catalog, this._demo, this._tools);
 
   final CatalogRepository _catalog;
   final DemoRepository _demo;
+  final DeveloperTools _tools;
 
   Future<Result<void>> call() async {
+    await _tools.restartDemoCalendar();
     final refreshed = await _catalog.refresh();
     if (refreshed case Err(:final exception)) return Err(exception);
     return _demo.loadDemoUser();

@@ -48,8 +48,8 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 | 4 | Search and Saved | ✅ Done |
 | 5 | RSVP, tickets and the agenda | ✅ Done |
 | 6 | Organizers, profile and settings | ✅ Done |
-| 7 | Notifications and background sync | ⏳ Next |
-| 8 | Open-source polish and final docs | |
+| 7 | Notifications and background sync | ✅ Done |
+| 8 | Open-source polish and final docs | ⏳ Next |
 
 ---
 
@@ -91,9 +91,9 @@ Packages arrive in the phase that first needs them.
 | iOS touches | `cupertino_ui` (adaptive dialogs) | 5 |
 | Dynamic color | `dynamic_color` (the wallpaper's palette, Android 12+) | 6 |
 | App info | `package_info_plus` | 6 |
+| Notifications | `flutter_local_notifications` (planned and diffed, three Android channels, taps on a cold and a warm start) | 7 |
+| Background work | `workmanager` (WorkManager on Android, BGTaskScheduler on iOS; a background isolate with its own graph) | 7 |
 | Testing | `flutter_test`, `bloc_test`, `mocktail`, `fake_async` | 1, 2 |
-
-Planned: `flutter_local_notifications`, `workmanager` (Phase 7).
 
 ---
 
@@ -104,7 +104,8 @@ A clean, layered architecture with a one-directional data flow:
 ```
 lib/
 ├── app/        → root widget (MaterialApp.router, themes)
-├── core/       → design system, navigation, the database, the fake API, preferences; (later) notifications, background work
+├── background/ → the OS's entry point for the background sync, and its hand-built graph
+├── core/       → design system, navigation, the database, the fake API, preferences, notifications, background work
 ├── data/       → repository implementations, mappers, the API guard
 ├── domain/     → models, contracts, use cases (pure Dart)
 ├── features/   → one folder per screen (Page + View + Cubit/Bloc)
@@ -137,7 +138,7 @@ Key rules:
 **Data:**
 
 ```
-FakeEventlyApi (seed rendered as of now, 700 ms) ─▶ checked DTOs ─▶ mappers (rules) ─▶ drift
+FakeEventlyApi (seed rendered from its calendar's anchor, 700 ms) ─▶ checked DTOs ─▶ mappers (rules) ─▶ drift
                                                                                        │
    catalog: organizers, events (+ offers, sessions)   ◀── user rows point here, never CASCADE
    user:    saved, tickets (one active per event), bookmarks, follows, reminders, changes, searches, profile
@@ -214,20 +215,21 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**762 tests** after Phase 6:
+**891 tests** after Phase 7:
 - **Time and models:** `EventTime` in four zones, across both clock changes and midnight, end-exclusive; the user's "today"; upcoming and past at their edges; day grouping across zones (a New York night is tomorrow in London).
 - **Search:** the query for every filter and their combination (escaped `LIKE`, overlap windows, free vs paid, going vs a cancelled ticket); date presets in the user's calendar, across a clock change; recent searches; `SearchBloc` timing in fake time and switching in real time.
 - **Booking:** the server's rules (places, closed events, one booking each, cancel before the start), the booking and cancel transactions, nothing written on failure; ticket codes checked against every single substitution; RSVP validation; agenda days and clashes.
 - **Organizers, profile and settings:** Clear cache keeping everything owned; Reset demo data (and offline, nothing); the published catalog update; follows and next events (never a cancelled one); profile rules and counts; appearance and dynamic color applied app-wide.
+- **Notifications and the background sync:** the planner (lead times, cancelled and past events, the summary's days on both sides of a clock change, the horizon, the cap, stable ids); `diffCatalog` and change detection inside the refresh's transaction, recorded once and claimed once across isolates; plan → diff → apply against a fake device, a revoked permission turning the switch off; the RSVP confirmation and change alerts; the background dispatch; taps on a cold and a warm start.
 - **Rules:** why an event can't be booked (going, cancelled, ended, started, sold out) and which reason wins; Discover's sections; maps links; `https`-only links.
 - **The database:** every `CHECK`, foreign keys, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; saved and going as joins that follow every save and booking.
-- **The fake API and its seed:** relative times rendered with the venue's offset; latency and failures; the bundled seed passing every check as of six instants.
+- **The fake API and its seed:** relative times rendered with the venue's offset, from a calendar anchor kept on the device (so events don't move a day each day); latency and failures; the bundled seed passing every check as of six instants.
 - **Mappers and repositories:** every catalog and demo rule; success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed; saving offline.
 - **Formatting and widgets:** day headings, zoned ranges and their spoken form, prices in four currencies; the event card's actions, zone and large-text layout.
-- **Screens:** Welcome, Discover, Event detail, Search (with the filter sheet), Saved, RSVP, Tickets, Ticket detail, the Agenda, Organizer, Following, Profile, Edit profile and Settings: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link, searching offline, filters alone, Saved with Undo, booking with the ticket replacing the form, booking offline then Try again, cancelling, bookmarking, Dark app-wide, dynamic color, a published update marking tickets, clear cache, following, editing the profile); navigation and the drawer.
-- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), Search with filters and the filter sheet, Saved, RSVP (with errors, and closed), Tickets, a ticket (upcoming and past), the agenda with clashes, Profile on a fresh start, Following with nobody, Edit profile with errors, the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
+- **Screens:** Welcome, Discover, Event detail, Search (with the filter sheet), Saved, RSVP, Tickets, Ticket detail, the Agenda, Organizer, Following, Profile, Edit profile and Settings: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link, searching offline, filters alone, Saved with Undo, booking with the ticket replacing the form, booking offline then Try again, cancelling, bookmarking, Dark app-wide, dynamic color, a published update marking tickets, clear cache, following, editing the profile, turning notifications on or being denied, a reminder from an event's page, the RSVP confirmation, a synced update alerted once, notification taps, a permission revoked while away); navigation and the drawer.
+- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), Search with filters and the filter sheet, Saved, RSVP (with errors, and closed), Tickets, a ticket (upcoming and past), the agenda with clashes, Profile on a fresh start, Following with nobody, Edit profile with errors, Settings with notifications on and denied, the lead time choice, the plan sheet, an event with its reminder on, the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
 
-A hundred and seventeen mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
+A hundred and fifty-four mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -260,6 +262,7 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 - [Phase 4 — Search and Saved](docs/PHASE_4_SUMMARY.md)
 - [Phase 5 — RSVP, tickets and the agenda](docs/PHASE_5_SUMMARY.md)
 - [Phase 6 — Organizers, profile and settings](docs/PHASE_6_SUMMARY.md)
+- [Phase 7 — Notifications and background sync](docs/PHASE_7_SUMMARY.md)
 
 ---
 

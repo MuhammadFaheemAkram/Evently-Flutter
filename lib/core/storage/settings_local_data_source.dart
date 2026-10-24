@@ -18,6 +18,15 @@ class SettingsLocalDataSource {
   static const preferredCityKey = 'settings.preferredCity';
   static const themeModeKey = 'settings.themeMode';
   static const dynamicColorKey = 'settings.dynamicColor';
+  static const notificationsEnabledKey = 'settings.notificationsEnabled';
+  static const reminderLeadKey = 'settings.reminderLead';
+  static const summaryEnabledKey = 'settings.summaryEnabled';
+  static const summaryTimeKey = 'settings.summaryTime';
+
+  /// Not a setting: the fake server's calendar anchor (`DemoCalendar`),
+  /// kept here because the device's preferences are the one store both
+  /// isolates read.
+  static const demoAnchorKey = 'server.demoAnchor';
 
   /// The only keys the cache loads and allows writing.
   static const allowList = {
@@ -25,6 +34,11 @@ class SettingsLocalDataSource {
     preferredCityKey,
     themeModeKey,
     dynamicColorKey,
+    notificationsEnabledKey,
+    reminderLeadKey,
+    summaryEnabledKey,
+    summaryTimeKey,
+    demoAnchorKey,
   };
 
   final SharedPreferencesWithCache _preferences;
@@ -40,4 +54,9 @@ class SettingsLocalDataSource {
       _preferences.setString(key, value);
 
   Future<void> remove(String key) => _preferences.remove(key);
+
+  /// Reads the stored values again. The cache belongs to this isolate: what
+  /// the background isolate saved (a permission found revoked) reaches it
+  /// only through a reload.
+  Future<void> reload() => _preferences.reloadCache();
 }

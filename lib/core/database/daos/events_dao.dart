@@ -15,6 +15,7 @@ class EventCardRow {
     required this.organizerName,
     required this.isSaved,
     this.activeTicketId,
+    this.reminderChoice,
   });
 
   final EventRow event;
@@ -24,19 +25,32 @@ class EventCardRow {
 
   /// The user's active ticket for it, if any.
   final String? activeTicketId;
+
+  /// The user's reminder toggle for it, if they touched it.
+  final bool? reminderChoice;
 }
 
 /// Reads events together with the user's rows about them: the place where
 /// the catalog and the user's tables meet. It writes nothing.
 ///
-/// "Saved" and "going" are LEFT JOINs over the user's tables (a saved row,
-/// a ticket not cancelled), not columns of `events`: a refresh rewrites the
-/// event and can't lose them. Each join matches at most one row (the saved
-/// table's key, the one-active-ticket index), so an event is never listed
-/// twice. Because the joined tables are part of the query, drift re-runs it
-/// when the user saves an event or books one, not only on a refresh.
+/// "Saved", "going" and the reminder choice are LEFT JOINs over the user's
+/// tables (a saved row, a ticket not cancelled, a reminder row), not
+/// columns of `events`: a refresh rewrites the event and can't lose them.
+/// Each join matches at most one row (the saved and reminder tables' keys,
+/// the one-active-ticket index), so an event is never listed twice.
+/// Because the joined tables are part of the query, drift re-runs it when
+/// the user saves an event, books one or sets its reminder, not only on a
+/// refresh.
 @DriftAccessor(
-  tables: [Events, Organizers, TicketOffers, Sessions, SavedEvents, Tickets],
+  tables: [
+    Events,
+    Organizers,
+    TicketOffers,
+    Sessions,
+    SavedEvents,
+    Tickets,
+    EventReminders,
+  ],
 )
 class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   EventsDao(super.attachedDatabase);
@@ -62,6 +76,15 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       (_cards()..where(savedEvents.eventId.isNotNull())).watch().asyncMap(
         _withOffers,
       );
+
+  /// The events a reminder can be for: those you're going to or saved,
+  /// soonest first. The notification plan is made from these, again after
+  /// every change to them (a save, a ticket, a toggle, a refresh).
+  Stream<List<EventCardRow>> watchRemindable() =>
+      (_cards()
+            ..where(savedEvents.eventId.isNotNull() | tickets.id.isNotNull()))
+          .watch()
+          .asyncMap(_withOffers);
 
   /// The upcoming events matching [criteria], soonest first: one query, with
   /// every filter a `WHERE` clause.
@@ -180,6 +203,10 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
           tickets,
           tickets.eventId.equalsExp(events.id) & tickets.cancelledAt.isNull(),
         ),
+        leftOuterJoin(
+          eventReminders,
+          eventReminders.eventId.equalsExp(events.id),
+        ),
       ])..orderBy([
         OrderingTerm(expression: events.startsAt),
         OrderingTerm(expression: events.id),
@@ -208,6 +235,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
           organizerName: row.readTable(organizers).name,
           isSaved: row.readTableOrNull(savedEvents) != null,
           activeTicketId: row.readTableOrNull(tickets)?.id,
+          reminderChoice: row.readTableOrNull(eventReminders)?.enabled,
         ),
     ];
   }

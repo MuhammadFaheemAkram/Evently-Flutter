@@ -9,17 +9,25 @@ import 'package:evently/domain/model/ticket.dart';
 import 'package:evently/domain/model/ticket_item.dart';
 import 'package:evently/domain/repository/booking_repository.dart';
 import 'package:evently/domain/repository/catalog_repository.dart';
+import 'package:evently/domain/usecase/notification_use_cases.dart';
 import 'package:injectable/injectable.dart';
 
 /// Books a place: checks the form against the latest cached event (the
-/// form may have been open a while), then asks the server.
+/// form may have been open a while), then asks the server. Once it
+/// confirms, the RSVP confirmation is shown (when notifications are on).
 @injectable
 class RsvpEventUseCase {
-  const RsvpEventUseCase(this._catalog, this._booking, this._clock);
+  const RsvpEventUseCase(
+    this._catalog,
+    this._booking,
+    this._clock,
+    this._confirm,
+  );
 
   final CatalogRepository _catalog;
   final BookingRepository _booking;
   final EventClock _clock;
+  final ShowRsvpConfirmationUseCase _confirm;
 
   Future<Result<Ticket>> call(
     String eventId, {
@@ -38,7 +46,11 @@ class RsvpEventUseCase {
     if (problem != null) {
       return Err(InvalidInputException(rsvpProblemMessage(problem)));
     }
-    return _booking.rsvp(eventId, type: type!, note: note.trim());
+    final result = await _booking.rsvp(eventId, type: type!, note: note.trim());
+    if (result case Ok(value: final ticket)) {
+      await _confirm(ticket, details.item.event);
+    }
+    return result;
   }
 }
 

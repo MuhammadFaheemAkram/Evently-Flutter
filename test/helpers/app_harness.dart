@@ -5,6 +5,7 @@ import 'package:evently/domain/repository/demo_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'fakes/fake_notification_scheduler.dart';
 import 'pump_app.dart';
 import 'test_dependencies.dart';
 
@@ -16,7 +17,9 @@ import 'test_dependencies.dart';
 /// An app past Welcome has the catalog cached, as Welcome leaves it; with
 /// [withDemo], the demo user too ("Explore with demo data").
 ///
-/// [preferences] adds saved settings (raw keys). [beforeLaunch] runs once
+/// [preferences] adds saved settings (raw keys); [notifications] plays the
+/// device's notifications (see [configureTestDependencies]). [beforeLaunch]
+/// runs once
 /// the graph exists and before the first frame (to switch the network off,
 /// say); it must not wait on anything (§11.44).
 Future<void> pumpEvently(
@@ -25,10 +28,12 @@ Future<void> pumpEvently(
   bool withDemo = false,
   String? initialLocation,
   Map<String, Object> preferences = const {},
+  FakeNotificationScheduler? notifications,
   void Function()? beforeLaunch,
 }) async {
   await configureTestDependencies(
     preferences: {if (onboarded) ...onboardedPreferences, ...preferences},
+    notifications: notifications,
   );
   if (onboarded) {
     // On the real event loop: before the first pump nothing advances the

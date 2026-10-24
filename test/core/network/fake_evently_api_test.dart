@@ -7,6 +7,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/fakes/memory_demo_calendar.dart';
 import '../../helpers/test_dependencies.dart';
 
 void main() {
@@ -16,6 +17,7 @@ void main() {
     AssetJsonLoader(rootBundle),
     network,
     Clock.fixed(demoNow),
+    MemoryDemoCalendar(Clock.fixed(demoNow)),
   );
 
   test('serves the bundled catalog, as of its clock', () async {

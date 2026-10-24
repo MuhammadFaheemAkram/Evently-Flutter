@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/database/tables/tables.dart';
+import 'package:evently/domain/calculation/catalog_diff.dart';
+import 'package:evently/domain/model/event_enums.dart';
 
 part 'catalog_dao.g.dart';
 
@@ -37,8 +39,8 @@ class CatalogDao extends DatabaseAccessor<AppDatabase> with _$CatalogDaoMixin {
   ///   §11.57, and the venue/online `CHECK` would then refuse it).
   /// - **Nothing is deleted,** except an event's ticket offers, which are
   ///   part of the event and rewritten with it (nothing of the user's points
-  ///   at an offer). An event missing from a newer catalog stays; Phase 7
-  ///   marks it cancelled.
+  ///   at an offer). An event missing from a newer catalog stays: a full
+  ///   refresh marks it cancelled ([cancelMissing]).
   Future<void> upsertCatalog(CatalogRows rows) {
     return transaction(() async {
       for (final row in rows.organizers) {
@@ -57,6 +59,33 @@ class CatalogDao extends DatabaseAccessor<AppDatabase> with _$CatalogDaoMixin {
             .insert(row, onConflict: DoUpdate((_) => row.toCompanion(false)));
       }
     });
+  }
+
+  /// Marks the cached events not in [ids] (gone from the server's catalog)
+  /// cancelled, rather than deleting them: a ticket, a save or an alert may
+  /// point at one, and "cancelled" is what the user should read. Only a
+  /// full catalog may say what's gone; a booking's single event never
+  /// calls this.
+  Future<void> cancelMissing(Set<String> ids) =>
+      (update(events)..where(
+            (e) =>
+                e.id.isNotIn(ids) &
+                e.status.equalsValue(EventStatus.cancelled).not(),
+          ))
+          .write(const EventsCompanion(status: Value(EventStatus.cancelled)));
+
+  /// Every cached event's start and status, for change detection.
+  Future<List<EventVersion>> versions() async {
+    final query = selectOnly(events)
+      ..addColumns([events.id, events.startsAt, events.status]);
+    return [
+      for (final row in await query.get())
+        (
+          id: row.read(events.id)!,
+          start: row.read(events.startsAt)!,
+          status: row.readWithConverter<EventStatus, String>(events.status)!,
+        ),
+    ];
   }
 
   /// Clear cache: deletes the cached events nothing of the user's points

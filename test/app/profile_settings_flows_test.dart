@@ -16,8 +16,13 @@ void main() {
     await tester.tapAndSettle(find.byTooltip('Settings'));
   }
 
+  /// Scrolls [label] into view and taps it. `scrollUntilVisible` alone
+  /// stops at once for a tile the list already built below the screen (in
+  /// its cache extent); `ensureVisible` brings it on screen.
   Future<void> tapInSettings(WidgetTester tester, String label) async {
     await tester.scrollUntilVisible(find.text(label), 300);
+    await tester.ensureVisible(find.text(label));
+    await tester.pumpAndSettle();
     await tester.tapAndSettle(find.text(label));
   }
 

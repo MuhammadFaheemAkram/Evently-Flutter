@@ -6,10 +6,12 @@ EventCardItem card(
   Event event, {
   bool isSaved = false,
   bool isGoing = false,
+  bool? reminderChoice,
   String organizerName = 'Organizer org_1',
 }) => EventCardItem(
   event: event,
   organizerName: organizerName,
   isSaved: isSaved,
   isGoing: isGoing,
+  reminderChoice: reminderChoice,
 );

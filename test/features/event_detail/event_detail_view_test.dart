@@ -1,4 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:evently/core/design_system/design_system.dart';
+import 'package:evently/domain/model/app_settings.dart';
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/domain/model/event_details.dart';
 import 'package:evently/domain/model/event_enums.dart';
@@ -32,12 +34,14 @@ void main() {
     Event? shown,
     bool isGoing = false,
     bool isSaved = false,
+    bool? reminderChoice,
     int sessionCount = 0,
   }) => EventDetails(
     item: card(
       shown ?? event(title: 'Jazz night'),
       isGoing: isGoing,
       isSaved: isSaved,
+      reminderChoice: reminderChoice,
     ),
     organizer: organizer(),
     agendaPreview: [if (sessionCount > 0) session(title: 'Opening keynote')],
@@ -45,12 +49,17 @@ void main() {
     ticketId: isGoing ? 't1' : null,
   );
 
-  EventDetailState ready(EventDetails shown, {DateTime? now}) =>
-      EventDetailState(
-        status: EventDetailStatus.ready,
-        details: shown,
-        now: now ?? before,
-      );
+  EventDetailState ready(
+    EventDetails shown, {
+    DateTime? now,
+    bool notificationsOn = true,
+  }) => EventDetailState(
+    status: EventDetailStatus.ready,
+    details: shown,
+    now: now ?? before,
+    notificationsEnabled: notificationsOn,
+    reminderLead: ReminderLead.threeHours,
+  );
 
   setUp(() {
     cubit = _MockEventDetailCubit();
@@ -58,6 +67,8 @@ void main() {
     when(() => cubit.openDirections(appleMaps: any(named: 'appleMaps')))
         .thenAnswer((_) async {});
     when(() => cubit.openJoinLink()).thenAnswer((_) async {});
+    when(() => cubit.setReminder(enabled: any(named: 'enabled')))
+        .thenAnswer((_) async {});
   });
 
   Future<void> pump(WidgetTester tester, EventDetailState state) {
@@ -236,6 +247,77 @@ void main() {
     expect(find.text("This event isn't available"), findsOneWidget);
     expect(find.text('Go to Discover'), findsOneWidget);
     expect(find.byTooltip('Save'), findsNothing);
+  });
+
+  group('the reminder toggle', () {
+    Finder toggle() => find.byType(ReminderToggle);
+
+    testWidgets('going: on by default, with the lead time; a tap turns it '
+        'off', (tester) async {
+      await pump(tester, ready(details(isGoing: true)));
+
+      expect(find.text('Remind me'), findsOneWidget);
+      expect(find.text('3 hours before it starts'), findsOneWidget);
+      await tester.tap(toggle());
+
+      verify(() => cubit.setReminder(enabled: false)).called(1);
+    });
+
+    testWidgets('saved: off until turned on', (tester) async {
+      await pump(tester, ready(details(isSaved: true)));
+
+      expect(find.text('No reminder for this event'), findsOneWidget);
+      await tester.tap(toggle());
+
+      verify(() => cubit.setReminder(enabled: true)).called(1);
+    });
+
+    testWidgets('your choice is shown', (tester) async {
+      await pump(tester, ready(details(isGoing: true, reminderChoice: false)));
+
+      expect(find.text('No reminder for this event'), findsOneWidget);
+    });
+
+    testWidgets('notifications off: off, disabled, and why', (tester) async {
+      await pump(tester, ready(details(isGoing: true), notificationsOn: false));
+
+      expect(
+        find.text('Notifications are off. Turn them on in Settings.'),
+        findsOneWidget,
+      );
+      await tester.tap(toggle());
+      verifyNever(() => cubit.setReminder(enabled: any(named: 'enabled')));
+    });
+
+    // One state per test: a MockCubit pumped again keeps its first state
+    // (conventions §11.73).
+    testWidgets('none for an event you neither saved nor booked', (
+      tester,
+    ) async {
+      await pump(tester, ready(details()));
+
+      expect(toggle(), findsNothing);
+    });
+
+    testWidgets('none for a cancelled event', (tester) async {
+      await pump(
+        tester,
+        ready(
+          details(isGoing: true, shown: event(status: EventStatus.cancelled)),
+        ),
+      );
+
+      expect(toggle(), findsNothing);
+    });
+
+    testWidgets('none once it has started', (tester) async {
+      await pump(
+        tester,
+        ready(details(isGoing: true), now: DateTime.utc(2026, 10, 24, 18)),
+      );
+
+      expect(toggle(), findsNothing);
+    });
   });
 
   testWidgets('the title is a heading', (tester) async {

@@ -6,6 +6,7 @@ import 'package:evently/core/database/daos/events_dao.dart';
 import 'package:evently/core/database/daos/organizers_dao.dart';
 import 'package:evently/core/database/daos/profile_dao.dart';
 import 'package:evently/core/database/daos/recent_searches_dao.dart';
+import 'package:evently/core/database/daos/reminders_dao.dart';
 import 'package:evently/core/database/daos/saved_events_dao.dart';
 import 'package:evently/core/database/daos/session_bookmarks_dao.dart';
 import 'package:evently/core/database/daos/tickets_dao.dart';
@@ -49,14 +50,15 @@ part 'app_database.g.dart';
     SessionBookmarksDao,
     OrganizersDao,
     ProfileDao,
+    RemindersDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   /// Opens `evently.sqlite` in the app's documents directory. Tests pass an
   /// in-memory [executor] instead.
   ///
-  /// `shareAcrossIsolates`: from Phase 7 the background sync runs in a
-  /// second isolate (`workmanager`) while the app may be open. With this
+  /// `shareAcrossIsolates`: the background sync runs in a second isolate
+  /// (`workmanager`) while the app may be open. With this
   /// option both isolates talk to one drift server that owns the only
   /// connection, so they never write the file at once, and each sees the
   /// other's changes in its streams.

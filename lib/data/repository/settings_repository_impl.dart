@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:evently/core/storage/settings_local_data_source.dart';
 import 'package:evently/domain/model/app_settings.dart';
+import 'package:evently/domain/model/time_of_day_value.dart';
 import 'package:evently/domain/repository/settings_repository.dart';
 import 'package:injectable/injectable.dart';
 
@@ -13,10 +14,10 @@ typedef _Keys = SettingsLocalDataSource;
 /// its watchers at once, and persists through [SettingsLocalDataSource].
 /// Missing values fall back to the defaults.
 ///
-/// Only the values that changed are written. From Phase 7 the background
-/// isolate keeps its own copy of the settings; writing every key from a
-/// stale copy would undo what the other isolate saved meanwhile
-/// (Momentum's lesson, conventions §11.64).
+/// Only the values that changed are written. The background isolate keeps
+/// its own copy of the settings; writing every key from a stale copy would
+/// undo what the other isolate saved meanwhile (Momentum's lesson,
+/// conventions §11.64).
 @LazySingleton(as: SettingsRepository)
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._local) : _current = _read(_local);
@@ -62,6 +63,33 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (before.dynamicColor != after.dynamicColor) {
       await _local.setBool(_Keys.dynamicColorKey, value: after.dynamicColor);
     }
+    if (before.notificationsEnabled != after.notificationsEnabled) {
+      await _local.setBool(
+        _Keys.notificationsEnabledKey,
+        value: after.notificationsEnabled,
+      );
+    }
+    if (before.reminderLead != after.reminderLead) {
+      await _local.setString(_Keys.reminderLeadKey, after.reminderLead.name);
+    }
+    if (before.summaryEnabled != after.summaryEnabled) {
+      await _local.setBool(
+        _Keys.summaryEnabledKey,
+        value: after.summaryEnabled,
+      );
+    }
+    if (before.summaryTime != after.summaryTime) {
+      await _local.setString(_Keys.summaryTimeKey, after.summaryTime.toHhMm());
+    }
+  }
+
+  @override
+  Future<void> reload() async {
+    await _local.reload();
+    final settings = _read(_local);
+    if (settings == _current) return;
+    _current = settings;
+    _changes.add(settings);
   }
 
   /// Closes the change stream (for tests: the app keeps one repository for
@@ -82,6 +110,28 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaults.themeMode,
       dynamicColor:
           local.getBool(_Keys.dynamicColorKey) ?? defaults.dynamicColor,
+      notificationsEnabled:
+          local.getBool(_Keys.notificationsEnabledKey) ??
+          defaults.notificationsEnabled,
+      reminderLead:
+          ReminderLead.values.asNameMap()[local.getString(
+            _Keys.reminderLeadKey,
+          )] ??
+          defaults.reminderLead,
+      summaryEnabled:
+          local.getBool(_Keys.summaryEnabledKey) ?? defaults.summaryEnabled,
+      summaryTime:
+          _time(local.getString(_Keys.summaryTimeKey)) ?? defaults.summaryTime,
     );
+  }
+
+  /// A stored `HH:mm`, or `null` when there's none or it's damaged.
+  static TimeOfDayValue? _time(String? hhMm) {
+    if (hhMm == null) return null;
+    try {
+      return TimeOfDayValue.parse(hhMm);
+    } on FormatException {
+      return null;
+    }
   }
 }

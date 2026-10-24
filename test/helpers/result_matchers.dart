@@ -8,3 +8,10 @@ Matcher isOk([Object? value = anything]) =>
 /// An [Err] whose exception is a [E].
 Matcher isErr<E>() =>
     isA<Err<Object?>>().having((err) => err.exception, 'exception', isA<E>());
+
+/// An [Err] whose exception's message is [message].
+Matcher isErrSaying(String message) => isA<Err<Object?>>().having(
+  (err) => err.exception.message,
+  'message',
+  message,
+);

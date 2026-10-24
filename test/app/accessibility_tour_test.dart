@@ -83,6 +83,22 @@ void main() {
         await expectAccessible(tester);
       });
 
+      testWidgets('RSVP, with errors after Confirm', (tester) async {
+        await open(tester, at: '/events/ev_jazz_vaults/rsvp');
+        await tester.enterText(find.byType(TextField), 'a' * 201);
+        await tester.tap(find.text('Confirm'));
+        await tester.pumpAndSettle();
+        expect(find.text('Choose a ticket type.'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Tickets, past', (tester) async {
+        await open(tester, at: '/tickets');
+        await tester.tap(find.text('Past'));
+        await tester.pumpAndSettle();
+        await expectAccessible(tester);
+      });
+
       testWidgets('the navigation drawer', (tester) async {
         await open(tester, at: '/discover');
         await tester.openDrawer();
@@ -105,8 +121,10 @@ void main() {
         ('Event, over', '/events/ev_accessibility_talk'),
         ('Event, not found', '/events/ev_nowhere'),
         ('RSVP', '/events/ev_jazz_vaults/rsvp'),
-        ('Agenda', '/events/ev_design_conf/agenda'),
-        ('Ticket', '/tickets/t1'),
+        ('RSVP, closed (going)', '/events/ev_flutter_london_meetup/rsvp'),
+        ('Agenda, with clashes', '/events/ev_design_conf/agenda'),
+        ('Ticket', '/tickets/tkt_demo_design_conf'),
+        ('Ticket, past', '/tickets/tkt_demo_accessibility'),
         ('Organizer', '/organizers/o1'),
         ('Following', '/following'),
         ('Edit profile', '/profile/edit'),

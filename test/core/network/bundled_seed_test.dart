@@ -4,6 +4,7 @@ import 'package:evently/core/network/fake_evently_api.dart';
 import 'package:evently/core/network/network_simulator.dart';
 import 'package:evently/data/mapper/catalog_mappers.dart';
 import 'package:evently/data/mapper/user_data_mappers.dart';
+import 'package:evently/domain/calculation/ticket_codes.dart';
 import 'package:evently/domain/model/catalog.dart';
 import 'package:evently/domain/model/user_data.dart';
 import 'package:flutter/services.dart';
@@ -155,7 +156,7 @@ void main() {
           contains(ticket.type),
           reason: ticket.id,
         );
-        expect(_isValidCode(ticket.code), isTrue, reason: ticket.code);
+        expect(TicketCodes.isValid(ticket.code), isTrue, reason: ticket.code);
       }
     });
 
@@ -170,19 +171,4 @@ void main() {
       expect(ids(catalog.events.map((e) => (id: e.id))), hasLength(25));
     });
   });
-}
-
-/// "EVT-" then 8 characters of an alphabet without 0, O, 1 and I; the last
-/// is a check character over the first 7 (Phase 5 brings the app's own).
-bool _isValidCode(String code) {
-  const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-  final match = RegExp(r'^EVT-([2-9A-HJ-NP-Z]{4})-([2-9A-HJ-NP-Z]{4})$')
-      .firstMatch(code);
-  if (match == null) return false;
-  final chars = '${match[1]}${match[2]}';
-  var sum = 0;
-  for (var i = 0; i < 7; i++) {
-    sum += (i + 1) * alphabet.indexOf(chars[i]);
-  }
-  return chars[7] == alphabet[sum % alphabet.length];
 }

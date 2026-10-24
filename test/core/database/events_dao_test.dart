@@ -90,7 +90,7 @@ void main() {
     await db
         .into(db.tickets)
         .insert(
-          ticket(id: 't2', eventId: 'ev_late', code: 'EVT-H4TW-8RCW').toRow(),
+          ticket(id: 't2', eventId: 'ev_late', code: 'EVT-H4TW-8RCU').toRow(),
         );
 
     final cards = await dao.watchCards().first;

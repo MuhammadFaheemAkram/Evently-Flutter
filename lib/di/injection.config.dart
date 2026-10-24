@@ -17,6 +17,8 @@ import 'package:evently/core/database/daos/catalog_dao.dart' as _i601;
 import 'package:evently/core/database/daos/events_dao.dart' as _i386;
 import 'package:evently/core/database/daos/recent_searches_dao.dart' as _i835;
 import 'package:evently/core/database/daos/saved_events_dao.dart' as _i794;
+import 'package:evently/core/database/daos/session_bookmarks_dao.dart' as _i574;
+import 'package:evently/core/database/daos/tickets_dao.dart' as _i4;
 import 'package:evently/core/database/daos/user_data_dao.dart' as _i542;
 import 'package:evently/core/network/asset_json_loader.dart' as _i1000;
 import 'package:evently/core/network/evently_api.dart' as _i844;
@@ -24,34 +26,45 @@ import 'package:evently/core/network/fake_evently_api.dart' as _i796;
 import 'package:evently/core/network/network_simulator.dart' as _i1024;
 import 'package:evently/core/platform/url_launcher_link_opener.dart' as _i1051;
 import 'package:evently/core/storage/settings_local_data_source.dart' as _i327;
+import 'package:evently/data/repository/booking_repository_impl.dart' as _i373;
 import 'package:evently/data/repository/catalog_repository_impl.dart' as _i507;
 import 'package:evently/data/repository/demo_repository_impl.dart' as _i936;
 import 'package:evently/data/repository/recent_searches_repository_impl.dart'
     as _i315;
 import 'package:evently/data/repository/saved_event_repository_impl.dart'
     as _i947;
+import 'package:evently/data/repository/schedule_repository_impl.dart' as _i564;
 import 'package:evently/data/repository/search_repository_impl.dart' as _i832;
-import 'package:evently/data/repository/settings_repository_impl.dart' as _i4;
+import 'package:evently/data/repository/settings_repository_impl.dart' as _i5;
 import 'package:evently/di/app_module.dart' as _i64;
+import 'package:evently/domain/repository/booking_repository.dart' as _i435;
 import 'package:evently/domain/repository/catalog_repository.dart' as _i521;
 import 'package:evently/domain/repository/demo_repository.dart' as _i182;
 import 'package:evently/domain/repository/recent_searches_repository.dart'
     as _i107;
 import 'package:evently/domain/repository/saved_event_repository.dart' as _i285;
+import 'package:evently/domain/repository/schedule_repository.dart' as _i49;
 import 'package:evently/domain/repository/search_repository.dart' as _i691;
 import 'package:evently/domain/repository/settings_repository.dart' as _i233;
 import 'package:evently/domain/service/link_opener.dart' as _i216;
+import 'package:evently/domain/usecase/booking_use_cases.dart' as _i217;
 import 'package:evently/domain/usecase/catalog_use_cases.dart' as _i997;
 import 'package:evently/domain/usecase/event_use_cases.dart' as _i351;
 import 'package:evently/domain/usecase/open_link_use_case.dart' as _i860;
+import 'package:evently/domain/usecase/schedule_use_cases.dart' as _i983;
 import 'package:evently/domain/usecase/search_use_cases.dart' as _i626;
 import 'package:evently/domain/usecase/settings_use_cases.dart' as _i27;
 import 'package:evently/domain/usecase/start_use_cases.dart' as _i1009;
+import 'package:evently/features/agenda/cubit/agenda_cubit.dart' as _i788;
 import 'package:evently/features/discover/cubit/discover_cubit.dart' as _i664;
 import 'package:evently/features/event_detail/cubit/event_detail_cubit.dart'
     as _i186;
+import 'package:evently/features/rsvp/cubit/rsvp_cubit.dart' as _i655;
 import 'package:evently/features/saved/cubit/saved_cubit.dart' as _i397;
 import 'package:evently/features/search/bloc/search_bloc.dart' as _i820;
+import 'package:evently/features/ticket_detail/cubit/ticket_detail_cubit.dart'
+    as _i648;
+import 'package:evently/features/tickets/cubit/tickets_cubit.dart' as _i220;
 import 'package:evently/features/welcome/cubit/welcome_cubit.dart' as _i321;
 import 'package:flutter/services.dart' as _i281;
 import 'package:get_it/get_it.dart' as _i174;
@@ -90,8 +103,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i835.RecentSearchesDao>(
       () => appModule.recentSearchesDao(gh<_i496.AppDatabase>()),
     );
+    gh.lazySingleton<_i4.TicketsDao>(
+      () => appModule.ticketsDao(gh<_i496.AppDatabase>()),
+    );
+    gh.lazySingleton<_i574.SessionBookmarksDao>(
+      () => appModule.sessionBookmarksDao(gh<_i496.AppDatabase>()),
+    );
     gh.lazySingleton<_i794.SavedEventsDao>(
       () => appModule.savedEventsDao(gh<_i496.AppDatabase>()),
+    );
+    gh.lazySingleton<_i49.ScheduleRepository>(
+      () => _i564.ScheduleRepositoryImpl(
+        gh<_i574.SessionBookmarksDao>(),
+        gh<_i454.Clock>(),
+      ),
     );
     gh.lazySingleton<_i285.SavedEventRepository>(
       () => _i947.SavedEventRepositoryImpl(
@@ -103,9 +128,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i216.LinkOpener>(
       () => const _i1051.UrlLauncherLinkOpener(),
     );
+    gh.factory<_i983.WatchAgendaUseCase>(
+      () => _i983.WatchAgendaUseCase(gh<_i49.ScheduleRepository>()),
+    );
+    gh.factory<_i983.SetSessionBookmarkedUseCase>(
+      () => _i983.SetSessionBookmarkedUseCase(gh<_i49.ScheduleRepository>()),
+    );
     gh.lazySingleton<_i327.SettingsLocalDataSource>(
       () =>
           _i327.SettingsLocalDataSource(gh<_i460.SharedPreferencesWithCache>()),
+    );
+    gh.factory<_i788.AgendaCubit>(
+      () => _i788.AgendaCubit(
+        gh<_i983.WatchAgendaUseCase>(),
+        gh<_i983.SetSessionBookmarkedUseCase>(),
+      ),
     );
     gh.lazySingleton<_i1000.AssetJsonLoader>(
       () => _i1000.AssetJsonLoader(gh<_i281.AssetBundle>()),
@@ -114,6 +151,13 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i796.FakeEventlyApi(
         gh<_i1000.AssetJsonLoader>(),
         gh<_i1024.NetworkSimulator>(),
+        gh<_i454.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i435.BookingRepository>(
+      () => _i373.BookingRepositoryImpl(
+        gh<_i844.EventlyApi>(),
+        gh<_i4.TicketsDao>(),
         gh<_i454.Clock>(),
       ),
     );
@@ -141,8 +185,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i805.EventClock>(),
       ),
     );
+    gh.factory<_i217.WatchTicketsUseCase>(
+      () => _i217.WatchTicketsUseCase(gh<_i435.BookingRepository>()),
+    );
+    gh.factory<_i217.WatchTicketUseCase>(
+      () => _i217.WatchTicketUseCase(gh<_i435.BookingRepository>()),
+    );
     gh.lazySingleton<_i233.SettingsRepository>(
-      () => _i4.SettingsRepositoryImpl(gh<_i327.SettingsLocalDataSource>()),
+      () => _i5.SettingsRepositoryImpl(gh<_i327.SettingsLocalDataSource>()),
     );
     gh.lazySingleton<_i182.DemoRepository>(
       () => _i936.DemoRepositoryImpl(
@@ -173,11 +223,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i805.EventClock>(),
       ),
     );
+    gh.factory<_i217.CancelRsvpUseCase>(
+      () => _i217.CancelRsvpUseCase(
+        gh<_i435.BookingRepository>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
     gh.factory<_i27.WatchSettingsUseCase>(
       () => _i27.WatchSettingsUseCase(gh<_i233.SettingsRepository>()),
     );
     gh.factory<_i1009.StartFreshUseCase>(
       () => _i1009.StartFreshUseCase(gh<_i233.SettingsRepository>()),
+    );
+    gh.factory<_i648.TicketDetailCubit>(
+      () => _i648.TicketDetailCubit(
+        gh<_i217.WatchTicketUseCase>(),
+        gh<_i217.CancelRsvpUseCase>(),
+        gh<_i805.EventClock>(),
+      ),
     );
     gh.factory<_i626.WatchRecentSearchesUseCase>(
       () => _i626.WatchRecentSearchesUseCase(
@@ -192,6 +255,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i107.RecentSearchesRepository>(),
       ),
     );
+    gh.factory<_i220.TicketsCubit>(
+      () => _i220.TicketsCubit(
+        gh<_i217.WatchTicketsUseCase>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
     gh.factory<_i997.RefreshCatalogUseCase>(
       () => _i997.RefreshCatalogUseCase(gh<_i521.CatalogRepository>()),
     );
@@ -203,6 +272,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i351.WatchEventDetailsUseCase>(
       () => _i351.WatchEventDetailsUseCase(gh<_i521.CatalogRepository>()),
+    );
+    gh.factory<_i217.RsvpEventUseCase>(
+      () => _i217.RsvpEventUseCase(
+        gh<_i521.CatalogRepository>(),
+        gh<_i435.BookingRepository>(),
+        gh<_i805.EventClock>(),
+      ),
     );
     gh.factory<_i820.SearchBloc>(
       () => _i820.SearchBloc(
@@ -236,6 +312,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i351.WatchEventDetailsUseCase>(),
         gh<_i351.SetEventSavedUseCase>(),
         gh<_i860.OpenLinkUseCase>(),
+        gh<_i805.EventClock>(),
+      ),
+    );
+    gh.factory<_i655.RsvpCubit>(
+      () => _i655.RsvpCubit(
+        gh<_i351.WatchEventDetailsUseCase>(),
+        gh<_i217.RsvpEventUseCase>(),
         gh<_i805.EventClock>(),
       ),
     );

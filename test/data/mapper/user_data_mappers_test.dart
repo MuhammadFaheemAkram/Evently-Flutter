@@ -17,7 +17,7 @@ void main() {
     'saved': [
       {'eventId': 'ev_1', 'savedAt': '2026-10-20T10:00:00.000+0100'},
     ],
-    'tickets': [ticketJson('t1', 'ev_1', 'EVT-7KQ2-M9XX')],
+    'tickets': [ticketJson('t1', 'ev_1', 'EVT-7KQ2-M9XH')],
     'bookmarks': [
       {'sessionId': 'ses_1', 'createdAt': '2026-10-20T09:00:00Z'},
     ],
@@ -76,20 +76,26 @@ void main() {
 
     test('a ticket id twice', () {
       final json = demoJson();
-      (json['tickets'] as List).add(ticketJson('t1', 'ev_2', 'EVT-H4TW-8RCW'));
+      (json['tickets'] as List).add(ticketJson('t1', 'ev_2', 'EVT-H4TW-8RCU'));
       expect(() => map(json), refused('a ticket id twice'));
     });
 
     test('a ticket code twice', () {
       final json = demoJson();
-      (json['tickets'] as List).add(ticketJson('t2', 'ev_2', 'EVT-7KQ2-M9XX'));
+      (json['tickets'] as List).add(ticketJson('t2', 'ev_2', 'EVT-7KQ2-M9XH'));
       expect(() => map(json), refused('a ticket code twice'));
     });
 
     test('two tickets for one event', () {
       final json = demoJson();
-      (json['tickets'] as List).add(ticketJson('t2', 'ev_1', 'EVT-H4TW-8RCW'));
+      (json['tickets'] as List).add(ticketJson('t2', 'ev_1', 'EVT-H4TW-8RCU'));
       expect(() => map(json), refused('two tickets for one event'));
+    });
+
+    test('a ticket code that fails its check', () {
+      final json = demoJson();
+      (json['tickets'] as List)[0] = ticketJson('t1', 'ev_1', 'EVT-7KQ2-M9XX');
+      expect(() => map(json), refused('a ticket code that fails its check'));
     });
 
     test('a profile with no name, or no email', () {

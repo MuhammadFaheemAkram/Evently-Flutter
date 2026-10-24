@@ -256,7 +256,7 @@ void main() {
             ticket(
               id: 't2',
               eventId: 'online',
-              code: 'EVT-H4TW-8RCW',
+              code: 'EVT-H4TW-8RCU',
               cancelledAt: at,
             ).toRow(),
           );

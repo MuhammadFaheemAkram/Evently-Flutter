@@ -44,6 +44,25 @@ final class InvalidInputException extends AppException {
   const InvalidInputException(super.message);
 }
 
+/// The server has no places left for the chosen ticket type.
+final class SoldOutException extends AppException {
+  const SoldOutException()
+    : super('Sold out: no places left for that ticket type.');
+}
+
+/// The server already has a booking of yours for this event.
+final class AlreadyBookedException extends AppException {
+  const AlreadyBookedException() : super("You're already going.");
+}
+
+/// The server no longer takes bookings (or cancellations) for the event:
+/// it was cancelled, or has started.
+final class BookingClosedException extends AppException {
+  const BookingClosedException([
+    super.message = 'Bookings for this event are closed.',
+  ]);
+}
+
 /// A link that isn't `https` (from the catalog, so never trusted blindly).
 final class UnsafeLinkException extends AppException {
   const UnsafeLinkException()

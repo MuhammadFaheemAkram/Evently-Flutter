@@ -11,7 +11,7 @@ final _at = DateTime.utc(2026, 10, 20, 9);
 Ticket ticket({
   String id = 't1',
   String eventId = 'ev_1',
-  String code = 'EVT-7KQ2-M9XX',
+  String code = 'EVT-7KQ2-M9XH',
   DateTime? cancelledAt,
 }) => Ticket(
   id: id,

@@ -198,7 +198,7 @@ void main() {
         {
           'id': 't1',
           'eventId': 'ev_1',
-          'code': 'EVT-7KQ2-M9XX',
+          'code': 'EVT-7KQ2-M9XH',
           'type': 'free',
           'note': '',
           'bookedDaysAgo': 5,

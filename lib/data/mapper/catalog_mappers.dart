@@ -47,125 +47,13 @@ extension CatalogDtoToDomain on CatalogDto {
     final domainEvents = <Event>[];
     final domainSessions = <ScheduleSession>[];
     for (final event in events) {
-      final id = event.id;
-      check(eventIds.add(id), 'event $id twice');
-      check(event.title.trim().isNotEmpty, '$id has no title');
+      check(eventIds.add(event.id), 'event ${event.id} twice');
       check(
         organizerIds.contains(event.organizerId),
-        '$id names an unknown organizer',
+        '${event.id} names an unknown organizer',
       );
-      try {
-        tz.getLocation(event.timeZone);
-      } on tz.LocationNotFoundException {
-        check(false, '$id is in an unknown time zone, ${event.timeZone}');
-      }
-      final start = event.startsAt.toUtc();
-      final end = event.endsAt.toUtc();
-      check(end.isAfter(start), '$id ends before it starts');
-
-      final venue = event.venue;
-      final joinUrl = event.joinUrl;
-      check(
-        (venue == null) != (joinUrl == null),
-        '$id needs a venue or a join link, not both',
-      );
-      final EventLocation location;
-      if (venue != null) {
-        check(
-          venue.name.trim().isNotEmpty && venue.city.trim().isNotEmpty,
-          "$id's venue needs a name and a city",
-        );
-        location = EventLocation.venue(
-          name: venue.name,
-          address: venue.address,
-          city: venue.city,
-        );
-      } else {
-        final uri = Uri.tryParse(joinUrl!);
-        check(
-          uri != null && uri.isScheme('https') && uri.host.isNotEmpty,
-          "$id's join link isn't an https address",
-        );
-        location = EventLocation.online(joinUrl: uri!);
-      }
-
-      check(event.capacity > 0, '$id has no places');
-      check(
-        event.attendeeCount >= 0 && event.attendeeCount <= event.capacity,
-        '$id has more attendees than places',
-      );
-      check(event.offers.isNotEmpty, '$id sells no tickets');
-      final types = <TicketType>{};
-      for (final offer in event.offers) {
-        check(types.add(offer.type), '$id sells ${offer.type.name} twice');
-        check(offer.priceMinor >= 0, "$id's ${offer.type.name} costs < 0");
-        check(
-          RegExp(r'^[A-Z]{3}$').hasMatch(offer.currency),
-          "$id's ${offer.type.name} has no currency code",
-        );
-        check(
-          offer.capacity > 0 &&
-              offer.remaining >= 0 &&
-              offer.remaining <= offer.capacity,
-          "$id's ${offer.type.name} has impossible places",
-        );
-      }
-      check(
-        (event.status == EventStatus.moved) == (event.previousStartsAt != null),
-        '$id: only a moved event has a previous start',
-      );
-
-      for (final session in event.sessions) {
-        final sessionStart = session.startsAt.toUtc();
-        final sessionEnd = session.endsAt.toUtc();
-        check(sessionIds.add(session.id), 'session ${session.id} twice');
-        check(session.title.trim().isNotEmpty, '${session.id} has no title');
-        check(
-          sessionEnd.isAfter(sessionStart),
-          '${session.id} ends before it starts',
-        );
-        check(
-          !sessionStart.isBefore(start) && !sessionEnd.isAfter(end),
-          '${session.id} falls outside $id',
-        );
-        domainSessions.add(
-          ScheduleSession(
-            id: session.id,
-            eventId: id,
-            title: session.title,
-            speaker: session.speaker,
-            room: session.room,
-            start: sessionStart,
-            end: sessionEnd,
-          ),
-        );
-      }
-
       domainEvents.add(
-        Event(
-          id: id,
-          title: event.title,
-          description: event.description,
-          category: event.category,
-          organizerId: event.organizerId,
-          time: EventTime(start: start, end: end, zone: event.timeZone),
-          location: location,
-          featured: event.featured,
-          attendeeCount: event.attendeeCount,
-          capacity: event.capacity,
-          status: event.status,
-          previousStart: event.previousStartsAt?.toUtc(),
-          offers: [
-            for (final offer in event.offers)
-              TicketOffer(
-                type: offer.type,
-                priceMinor: offer.priceMinor,
-                currency: offer.currency,
-                capacity: offer.capacity,
-                remaining: offer.remaining,
-              ),
-          ],
-        ),
+        event._checked(check, sessionIds: sessionIds, sessions: domainSessions),
       );
     }
 
@@ -182,6 +70,142 @@ extension CatalogDtoToDomain on CatalogDto {
       ],
       events: domainEvents,
       sessions: domainSessions,
+    );
+  }
+}
+
+extension EventDtoToDomain on EventDto {
+  /// The event as the server sent it alone (a booking's answer), after
+  /// checking every rule [CatalogDtoToDomain.toCatalog] checks of one event.
+  /// Its organizer must already be cached. Throws a [FormatException].
+  Event toEvent() => _checked(
+    (condition, problem) {
+      if (!condition) throw FormatException('Event: $problem');
+    },
+    sessionIds: {},
+    sessions: [],
+  );
+
+  /// This event, checked with [check]; its sessions, each id new to
+  /// [sessionIds], are added to [sessions].
+  Event _checked(
+    void Function(bool condition, String problem) check, {
+    required Set<String> sessionIds,
+    required List<ScheduleSession> sessions,
+  }) {
+    final event = this;
+    final id = event.id;
+    check(event.title.trim().isNotEmpty, '$id has no title');
+    try {
+      tz.getLocation(event.timeZone);
+    } on tz.LocationNotFoundException {
+      check(false, '$id is in an unknown time zone, ${event.timeZone}');
+    }
+    final start = event.startsAt.toUtc();
+    final end = event.endsAt.toUtc();
+    check(end.isAfter(start), '$id ends before it starts');
+
+    final venue = event.venue;
+    final joinUrl = event.joinUrl;
+    check(
+      (venue == null) != (joinUrl == null),
+      '$id needs a venue or a join link, not both',
+    );
+    final EventLocation location;
+    if (venue != null) {
+      check(
+        venue.name.trim().isNotEmpty && venue.city.trim().isNotEmpty,
+        "$id's venue needs a name and a city",
+      );
+      location = EventLocation.venue(
+        name: venue.name,
+        address: venue.address,
+        city: venue.city,
+      );
+    } else {
+      final uri = Uri.tryParse(joinUrl!);
+      check(
+        uri != null && uri.isScheme('https') && uri.host.isNotEmpty,
+        "$id's join link isn't an https address",
+      );
+      location = EventLocation.online(joinUrl: uri!);
+    }
+
+    check(event.capacity > 0, '$id has no places');
+    check(
+      event.attendeeCount >= 0 && event.attendeeCount <= event.capacity,
+      '$id has more attendees than places',
+    );
+    check(event.offers.isNotEmpty, '$id sells no tickets');
+    final types = <TicketType>{};
+    for (final offer in event.offers) {
+      check(types.add(offer.type), '$id sells ${offer.type.name} twice');
+      check(offer.priceMinor >= 0, "$id's ${offer.type.name} costs < 0");
+      check(
+        RegExp(r'^[A-Z]{3}$').hasMatch(offer.currency),
+        "$id's ${offer.type.name} has no currency code",
+      );
+      check(
+        offer.capacity > 0 &&
+            offer.remaining >= 0 &&
+            offer.remaining <= offer.capacity,
+        "$id's ${offer.type.name} has impossible places",
+      );
+    }
+    check(
+      (event.status == EventStatus.moved) == (event.previousStartsAt != null),
+      '$id: only a moved event has a previous start',
+    );
+
+    for (final session in event.sessions) {
+      final sessionStart = session.startsAt.toUtc();
+      final sessionEnd = session.endsAt.toUtc();
+      check(sessionIds.add(session.id), 'session ${session.id} twice');
+      check(session.title.trim().isNotEmpty, '${session.id} has no title');
+      check(
+        sessionEnd.isAfter(sessionStart),
+        '${session.id} ends before it starts',
+      );
+      check(
+        !sessionStart.isBefore(start) && !sessionEnd.isAfter(end),
+        '${session.id} falls outside $id',
+      );
+      sessions.add(
+        ScheduleSession(
+          id: session.id,
+          eventId: id,
+          title: session.title,
+          speaker: session.speaker,
+          room: session.room,
+          start: sessionStart,
+          end: sessionEnd,
+        ),
+      );
+    }
+
+    return Event(
+      id: id,
+      title: event.title,
+      description: event.description,
+      category: event.category,
+      organizerId: event.organizerId,
+      time: EventTime(start: start, end: end, zone: event.timeZone),
+      location: location,
+      featured: event.featured,
+      attendeeCount: event.attendeeCount,
+      capacity: event.capacity,
+      status: event.status,
+      previousStart: event.previousStartsAt?.toUtc(),
+      offers: [
+        for (final offer in event.offers)
+          TicketOffer(
+            type: offer.type,
+            priceMinor: offer.priceMinor,
+            currency: offer.currency,
+            capacity: offer.capacity,
+            remaining: offer.remaining,
+          ),
+      ],
     );
   }
 }

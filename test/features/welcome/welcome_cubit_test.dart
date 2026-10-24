@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:evently/core/common/app_exception.dart';
+import 'package:evently/core/network/dto/booking_dto.dart';
 import 'package:evently/core/network/dto/catalog_dto.dart';
 import 'package:evently/core/network/dto/demo_user_dto.dart';
 import 'package:evently/core/network/evently_api.dart';
@@ -197,6 +198,13 @@ class _GatedApi implements EventlyApi {
 
   @override
   Future<CatalogDto> fetchCatalog() => real.fetchCatalog();
+
+  @override
+  Future<BookingDto> rsvp(RsvpRequestDto request) => real.rsvp(request);
+
+  @override
+  Future<EventDto> cancelRsvp(CancelRequestDto request) =>
+      real.cancelRsvp(request);
 
   @override
   Future<DemoUserDto> fetchDemoUser() async {

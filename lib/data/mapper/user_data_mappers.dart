@@ -1,6 +1,7 @@
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
 import 'package:evently/core/network/dto/demo_user_dto.dart';
+import 'package:evently/domain/calculation/ticket_codes.dart';
 import 'package:evently/domain/model/ticket.dart';
 import 'package:evently/domain/model/user_data.dart';
 import 'package:evently/domain/model/user_profile.dart';
@@ -12,7 +13,8 @@ extension DemoUserDtoToDomain on DemoUserDto {
   /// [FormatException] naming the first rule broken; nothing is written.
   ///
   /// - each event saved once, each session bookmarked once, each organizer
-  ///   followed once; ticket ids and codes unique, one ticket per event;
+  ///   followed once; ticket ids and codes unique, one ticket per event,
+  ///   every code passing its check character;
   /// - a profile with a name and an email; an avatar only over https.
   ///
   /// Whether the events, sessions and organizers exist is the database's
@@ -37,6 +39,10 @@ extension DemoUserDtoToDomain on DemoUserDto {
     check(unique(tickets.map((t) => t.id)), 'a ticket id twice');
     check(unique(tickets.map((t) => t.code)), 'a ticket code twice');
     check(unique(tickets.map((t) => t.eventId)), 'two tickets for one event');
+    check(
+      tickets.every((t) => TicketCodes.isValid(t.code)),
+      'a ticket code that fails its check',
+    );
 
     final profile = this.profile;
     UserProfile? domainProfile;

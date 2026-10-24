@@ -7,6 +7,8 @@ import 'package:evently/core/database/daos/catalog_dao.dart';
 import 'package:evently/core/database/daos/events_dao.dart';
 import 'package:evently/core/database/daos/recent_searches_dao.dart';
 import 'package:evently/core/database/daos/saved_events_dao.dart';
+import 'package:evently/core/database/daos/session_bookmarks_dao.dart';
+import 'package:evently/core/database/daos/tickets_dao.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
 import 'package:evently/core/storage/settings_local_data_source.dart';
 import 'package:flutter/services.dart';
@@ -45,6 +47,13 @@ abstract class AppModule {
   @lazySingleton
   RecentSearchesDao recentSearchesDao(AppDatabase database) =>
       database.recentSearchesDao;
+
+  @lazySingleton
+  TicketsDao ticketsDao(AppDatabase database) => database.ticketsDao;
+
+  @lazySingleton
+  SessionBookmarksDao sessionBookmarksDao(AppDatabase database) =>
+      database.sessionBookmarksDao;
 
   @lazySingleton
   SavedEventsDao savedEventsDao(AppDatabase database) =>

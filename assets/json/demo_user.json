@@ -25,7 +25,7 @@
     {
       "id": "tkt_demo_flutter_london",
       "eventId": "ev_flutter_london_meetup",
-      "code": "EVT-7KQ2-M9XX",
+      "code": "EVT-7KQ2-M9XH",
       "type": "free",
       "note": "",
       "bookedDaysAgo": 5
@@ -33,7 +33,7 @@
     {
       "id": "tkt_demo_design_conf",
       "eventId": "ev_design_conf",
-      "code": "EVT-H4TW-8RCW",
+      "code": "EVT-H4TW-8RCU",
       "type": "standard",
       "note": "Vegetarian lunch, please.",
       "bookedDaysAgo": 12
@@ -41,7 +41,7 @@
     {
       "id": "tkt_demo_dart_patterns",
       "eventId": "ev_dart_patterns_live",
-      "code": "EVT-P3VN-6ZEU",
+      "code": "EVT-P3VN-6ZEC",
       "type": "free",
       "note": "",
       "bookedDaysAgo": 2
@@ -49,7 +49,7 @@
     {
       "id": "tkt_demo_accessibility",
       "eventId": "ev_accessibility_talk",
-      "code": "EVT-B8DS-5LU9",
+      "code": "EVT-B8DS-5LUF",
       "type": "free",
       "note": "",
       "bookedDaysAgo": 20

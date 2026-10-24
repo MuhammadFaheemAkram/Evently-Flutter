@@ -2,6 +2,7 @@
 library;
 
 export 'package:evently/core/design_system/formatting/event_formats.dart';
+export 'package:evently/core/design_system/formatting/filter_labels.dart';
 export 'package:evently/core/design_system/large_text.dart';
 export 'package:evently/core/design_system/theme/app_colors.dart';
 export 'package:evently/core/design_system/theme/app_icon_size.dart';
@@ -10,6 +11,7 @@ export 'package:evently/core/design_system/theme/app_spacing.dart';
 export 'package:evently/core/design_system/theme/app_theme.dart';
 export 'package:evently/core/design_system/theme/category_palette.dart';
 export 'package:evently/core/design_system/user_time_zone.dart';
+export 'package:evently/core/design_system/widgets/app_search_field.dart';
 export 'package:evently/core/design_system/widgets/attendance_label.dart';
 export 'package:evently/core/design_system/widgets/category_chip.dart';
 export 'package:evently/core/design_system/widgets/empty_state_view.dart';

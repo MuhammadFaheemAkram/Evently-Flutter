@@ -7,10 +7,13 @@ import 'package:evently/core/network/fake_evently_api.dart';
 import 'package:evently/core/network/network_simulator.dart';
 import 'package:evently/data/repository/catalog_repository_impl.dart';
 import 'package:evently/data/repository/demo_repository_impl.dart';
+import 'package:evently/data/repository/recent_searches_repository_impl.dart';
 import 'package:evently/data/repository/saved_event_repository_impl.dart';
+import 'package:evently/data/repository/search_repository_impl.dart';
 import 'package:evently/domain/usecase/catalog_use_cases.dart';
 import 'package:evently/domain/usecase/event_use_cases.dart';
 import 'package:evently/domain/usecase/open_link_use_case.dart';
+import 'package:evently/domain/usecase/search_use_cases.dart';
 import 'package:evently/domain/usecase/settings_use_cases.dart';
 import 'package:evently/domain/usecase/start_use_cases.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +46,16 @@ class DataStack {
   final settings = FakeSettingsRepository();
 
   late final catalog = CatalogRepositoryImpl(api, db.catalogDao, db.eventsDao);
-  late final savedEvents = SavedEventRepositoryImpl(db.savedEventsDao, clock);
+  late final savedEvents = SavedEventRepositoryImpl(
+    db.savedEventsDao,
+    db.eventsDao,
+    clock,
+  );
+  late final searchRepository = SearchRepositoryImpl(db.eventsDao);
+  late final recentSearches = RecentSearchesRepositoryImpl(
+    db.recentSearchesDao,
+    clock,
+  );
   late final eventClock = EventClock(clock, londonZone);
   final links = RecordingLinkOpener();
   late final demo = DemoRepositoryImpl(api, db.userDataDao);
@@ -57,6 +69,11 @@ class DataStack {
   late final setEventSaved = SetEventSavedUseCase(savedEvents);
   late final openLink = OpenLinkUseCase(links);
   late final watchSettings = WatchSettingsUseCase(settings);
+  late final watchSaved = WatchSavedEventsUseCase(savedEvents);
+  late final searchEvents = SearchEventsUseCase(searchRepository, eventClock);
+  late final watchRecentSearches = WatchRecentSearchesUseCase(recentSearches);
+  late final saveRecentSearch = SaveRecentSearchUseCase(recentSearches);
+  late final clearRecentSearches = ClearRecentSearchesUseCase(recentSearches);
 
   /// Fetches the catalog and the demo user, as "Explore with demo data"
   /// does.

@@ -45,8 +45,8 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 | 1 | Foundation: FVM project, design system base with the category palette, typed routes with a first-launch gate, 5-tab shell with a navigation drawer, CI | ✅ Done |
 | 2 | Data models with time zones, the drift cache (catalog and user tables), the fake API, Welcome | ✅ Done |
 | 3 | Discover and Event detail | ✅ Done |
-| 4 | Search and Saved | ⏳ Next |
-| 5 | RSVP, tickets and the agenda | |
+| 4 | Search and Saved | ✅ Done |
+| 5 | RSVP, tickets and the agenda | ⏳ Next |
 | 6 | Organizers, profile and settings | |
 | 7 | Notifications and background sync | |
 | 8 | Open-source polish and final docs | |
@@ -81,7 +81,7 @@ Packages arrive in the phase that first needs them.
 | Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`, a first-launch `redirect`) | 1 |
 | Dependency injection | `get_it` + `injectable` (a code-generated composition root) | 1 |
 | Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
-| State | `flutter_bloc` (Cubits) | 2 |
+| State | `flutter_bloc`: Cubits, and one Bloc (`SearchBloc`) with `bloc_concurrency` + `stream_transform` (debounce, restartable) | 2, 4 |
 | Models | `freezed` + `json_serializable` (checked DTOs) | 2 |
 | Database | `drift` + `drift_flutter` (catalog and user tables, `CHECK`s, a partial unique index, `shareAcrossIsolates`; schema exported to `drift_schemas/`) | 2 |
 | Preferences | `shared_preferences` (`SharedPreferencesWithCache`, resolved before `runApp`) | 2 |
@@ -89,7 +89,7 @@ Packages arrive in the phase that first needs them.
 | Links | `url_launcher` (directions and join links, `https` only) | 3 |
 | Testing | `flutter_test`, `bloc_test`, `mocktail`, `fake_async` | 1, 2 |
 
-Planned: `bloc_concurrency`, `stream_transform` (Phase 4); `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
+Planned: `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
 
 ---
 
@@ -142,6 +142,7 @@ FakeEventlyApi (seed rendered as of now, 700 ms) ─▶ checked DTOs ─▶ mapp
 ```
 
 - **Time:** an event is two UTC instants plus its venue's IANA zone (`EventTime`). An in-person event is told on its venue's clock (with "Your time" below when it differs), an online one on the user's; "Today" and "Tomorrow" are the user's days (`EventClock`, `UserTimeZone`).
+- **Search over the cache:** text plus a typed `EventFilter` (categories, dates, price, format, RSVP), compiled to one drift query; debounced and restartable in `SearchBloc`; works offline.
 - **Joins, not flags:** "saved" and "going" are LEFT JOINs over the user's rows, re-read by drift on every save or booking, so every screen follows at once.
 - **The server's data and the user's, apart:** a refresh upserts the catalog in one transaction (`ON CONFLICT DO UPDATE`, never `REPLACE`, never deleting); "saved" and "going" are the user's own rows.
 - **Failures are values:** repositories return a `Result` with an `AppException` (offline, damaged data, unknown); on any failure nothing is written.
@@ -208,17 +209,18 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**456 tests** after Phase 3:
+**546 tests** after Phase 4:
 - **Time and models:** `EventTime` in four zones, across both clock changes and midnight, end-exclusive; the user's "today"; upcoming and past at their edges; day grouping across zones (a New York night is tomorrow in London).
+- **Search:** the query for every filter and their combination (escaped `LIKE`, overlap windows, free vs paid, going vs a cancelled ticket); date presets in the user's calendar, across a clock change; recent searches; `SearchBloc` timing in fake time and switching in real time.
 - **Rules:** why an event can't be booked (going, cancelled, ended, started, sold out) and which reason wins; Discover's sections; maps links; `https`-only links.
 - **The database:** every `CHECK`, foreign keys, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; saved and going as joins that follow every save and booking.
 - **The fake API and its seed:** relative times rendered with the venue's offset; latency and failures; the bundled seed passing every check as of six instants.
 - **Mappers and repositories:** every catalog and demo rule; success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed; saving offline.
 - **Formatting and widgets:** day headings, zoned ranges and their spoken form, prices in four currencies; the event card's actions, zone and large-text layout.
-- **Screens:** Welcome, Discover and Event detail: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link); navigation and the drawer.
-- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
+- **Screens:** Welcome, Discover, Event detail, Search (with the filter sheet) and Saved: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link, searching offline, filters alone, Saved with Undo); navigation and the drawer.
+- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), Search with filters and the filter sheet, Saved, the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
 
-Forty-six mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
+Sixty-seven mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -248,6 +250,7 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
 - [Phase 2 — Data layer](docs/PHASE_2_SUMMARY.md)
 - [Phase 3 — Discover and Event detail](docs/PHASE_3_SUMMARY.md)
+- [Phase 4 — Search and Saved](docs/PHASE_4_SUMMARY.md)
 
 ---
 

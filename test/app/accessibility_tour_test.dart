@@ -63,6 +63,26 @@ void main() {
         await expectAccessible(tester);
       });
 
+      testWidgets('Search, results with filters', (tester) async {
+        await open(tester, at: '/search');
+        await tester.enterText(find.byType(TextField), 'London');
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.tap(find.byTooltip('Filters'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Free'));
+        await tester.pump();
+        await tester.tap(find.text('Apply'));
+        await tester.pumpUntilFound(find.textContaining(' events'));
+        await expectAccessible(tester);
+      });
+
+      testWidgets('the filter sheet', (tester) async {
+        await open(tester, at: '/search');
+        await tester.tap(find.byTooltip('Filters'));
+        await tester.pumpAndSettle();
+        await expectAccessible(tester);
+      });
+
       testWidgets('the navigation drawer', (tester) async {
         await open(tester, at: '/discover');
         await tester.openDrawer();

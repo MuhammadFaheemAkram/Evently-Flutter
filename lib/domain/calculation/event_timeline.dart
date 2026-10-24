@@ -30,3 +30,22 @@ List<DayGroup<T>> groupByDay<T>(
   }
   return [for (final (day, items) in groups) DayGroup(day: day, items: items)];
 }
+
+/// [items] split by whether they're over at [now]: the upcoming soonest
+/// first, the past most recent first.
+({List<T> upcoming, List<T> past}) splitByEnd<T>(
+  Iterable<T> items, {
+  required Event Function(T item) eventOf,
+  required DateTime now,
+}) {
+  final upcoming = <T>[];
+  final past = <T>[];
+  for (final item in items) {
+    (isUpcoming(eventOf(item), now) ? upcoming : past).add(item);
+  }
+  int byStart(T a, T b) =>
+      eventOf(a).time.start.compareTo(eventOf(b).time.start);
+  upcoming.sort(byStart);
+  past.sort((a, b) => byStart(b, a));
+  return (upcoming: upcoming, past: past);
+}

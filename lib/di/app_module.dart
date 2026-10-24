@@ -5,6 +5,7 @@ import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/database/daos/catalog_dao.dart';
 import 'package:evently/core/database/daos/events_dao.dart';
+import 'package:evently/core/database/daos/recent_searches_dao.dart';
 import 'package:evently/core/database/daos/saved_events_dao.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
 import 'package:evently/core/storage/settings_local_data_source.dart';
@@ -40,6 +41,10 @@ abstract class AppModule {
 
   @lazySingleton
   EventsDao eventsDao(AppDatabase database) => database.eventsDao;
+
+  @lazySingleton
+  RecentSearchesDao recentSearchesDao(AppDatabase database) =>
+      database.recentSearchesDao;
 
   @lazySingleton
   SavedEventsDao savedEventsDao(AppDatabase database) =>

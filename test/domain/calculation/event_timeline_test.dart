@@ -92,4 +92,27 @@ void main() {
 
     expect(isUpcoming(event(time: time), time.end), isFalse);
   });
+
+  test('split by end: upcoming soonest first, past most recent first', () {
+    EventTime at(int day) => EventTime(
+      start: DateTime.utc(2026, 10, day, 18),
+      end: DateTime.utc(2026, 10, day, 20),
+      zone: 'Europe/London',
+    );
+    final events = [
+      event(id: 'past old', time: at(10)),
+      event(id: 'later', time: at(25)),
+      event(id: 'past recent', time: at(18)),
+      event(id: 'soon', time: at(22)),
+    ];
+
+    final split = splitByEnd(
+      events,
+      eventOf: (e) => e,
+      now: DateTime.utc(2026, 10, 21),
+    );
+
+    expect([for (final e in split.upcoming) e.id], ['soon', 'later']);
+    expect([for (final e in split.past) e.id], ['past recent', 'past old']);
+  });
 }

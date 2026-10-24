@@ -27,6 +27,16 @@ class WatchEventDetailsUseCase {
       _catalog.watchEventDetails(eventId);
 }
 
+/// The events you saved, soonest first, kept current. Works offline.
+@injectable
+class WatchSavedEventsUseCase {
+  const WatchSavedEventsUseCase(this._saved);
+
+  final SavedEventRepository _saved;
+
+  Stream<List<EventCardItem>> call() => _saved.watch();
+}
+
 /// Saves or unsaves an event. Works offline.
 @injectable
 class SetEventSavedUseCase {

@@ -1,0 +1,81 @@
+{
+  "moves": [
+    {
+      "eventId": "ev_design_conf",
+      "byDays": 1
+    }
+  ],
+  "cancels": [
+    "ev_dart_patterns_live"
+  ],
+  "edits": [
+    {
+      "eventId": "ev_ai_summit",
+      "description": "A day on shipping AI features that last: evaluations, costs, privacy and teams. Now with a closing panel on regulation."
+    }
+  ],
+  "events": [
+    {
+      "id": "ev_flutter_hack_night",
+      "title": "Flutter Hack Night",
+      "description": "Bring a laptop and an idea: three hours of building with other Flutter developers, with mentors on hand.",
+      "category": "technology",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 6,
+        "at": "18:00"
+      },
+      "ends": {
+        "inDays": 6,
+        "at": "21:00"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 60,
+          "remaining": 60
+        }
+      ],
+      "venue": {
+        "name": "Code Hub",
+        "address": "1 Finsbury Avenue",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_lahore_design_sprint",
+      "title": "Design Sprint for Founders",
+      "description": "A one-day sprint: map a problem, sketch, decide, prototype and test with real users.",
+      "category": "design",
+      "organizerId": "org_lahore_startups",
+      "timeZone": "Asia/Karachi",
+      "starts": {
+        "inDays": 14,
+        "at": "10:00"
+      },
+      "ends": {
+        "inDays": 14,
+        "at": "17:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 100000,
+          "currency": "PKR",
+          "capacity": 40,
+          "remaining": 40
+        }
+      ],
+      "venue": {
+        "name": "Arfa Tower",
+        "address": "Ferozepur Road",
+        "city": "Lahore"
+      }
+    }
+  ]
+}

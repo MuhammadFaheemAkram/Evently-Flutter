@@ -2,11 +2,13 @@ import 'package:evently/core/design_system/formatting/event_formats.dart';
 import 'package:evently/core/design_system/theme/app_colors.dart';
 import 'package:evently/core/design_system/theme/app_spacing.dart';
 import 'package:evently/domain/model/event.dart';
+import 'package:evently/domain/model/event_enums.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// How full an event is: "124 going · 26 places left", "3 places left"
 /// (few: in the sold-out color, with an icon), "Sold out", or "124 went"
-/// once it's over ([ended]).
+/// once it's over ([ended]). An event the organizer cancelled says only
+/// that: its places no longer matter.
 class AttendanceLabel extends StatelessWidget {
   const AttendanceLabel({
     super.key,
@@ -26,6 +28,16 @@ class AttendanceLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = style ?? Theme.of(context).textTheme.bodySmall;
     final soldOutColor = context.appColors.soldOut;
+    if (event.status == EventStatus.cancelled) {
+      return _IconLabel(
+        icon: Icons.event_busy,
+        text: 'Cancelled',
+        style: base?.copyWith(
+          color: context.appColors.cancelled,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
     if (ended) {
       return Text('${event.attendeeCount} went', style: base);
     }
@@ -48,6 +60,33 @@ class AttendanceLabel extends StatelessWidget {
       '${event.attendeeCount} going · ${EventFormats.placesLeft(left)}',
       style: base,
     );
+  }
+}
+
+/// The organizer's word on an event, with an icon: "Moved" (the start
+/// shown is the new one) or "Cancelled". Nothing for a scheduled event.
+class EventStatusBadge extends StatelessWidget {
+  const EventStatusBadge({super.key, required this.status});
+
+  final EventStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final style = Theme.of(context).textTheme.labelLarge;
+    return switch (status) {
+      EventStatus.scheduled => const SizedBox.shrink(),
+      EventStatus.moved => _IconLabel(
+        icon: Icons.update,
+        text: 'Moved',
+        style: style?.copyWith(color: colors.moved),
+      ),
+      EventStatus.cancelled => _IconLabel(
+        icon: Icons.event_busy,
+        text: 'Cancelled',
+        style: style?.copyWith(color: colors.cancelled),
+      ),
+    };
   }
 }
 

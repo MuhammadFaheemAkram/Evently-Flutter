@@ -59,6 +59,38 @@ class CatalogDao extends DatabaseAccessor<AppDatabase> with _$CatalogDaoMixin {
     });
   }
 
+  /// Clear cache: deletes the cached events nothing of the user's points
+  /// at, and the organizers left with no event that nobody follows; their
+  /// offers and sessions go with them (`CASCADE`). The next refresh fetches
+  /// them again. Returns how many events went.
+  ///
+  /// An event the user saved, holds a ticket for (even a cancelled one),
+  /// bookmarked a session of, asked a reminder for, or was alerted about
+  /// stays: the user's rows point at it, and the foreign keys would refuse
+  /// the delete anyway. Asking for exactly the rest means the delete never
+  /// hits them.
+  Future<int> clearUnowned() => transaction(() async {
+    final owned = customSelect(
+      'SELECT event_id FROM saved_events '
+      'UNION SELECT event_id FROM tickets '
+      'UNION SELECT event_id FROM event_reminders '
+      'UNION SELECT event_id FROM event_changes '
+      'UNION SELECT s.event_id FROM sessions s '
+      'JOIN session_bookmarks b ON b.session_id = s.id',
+    );
+    final keep = {
+      for (final row in await owned.get()) row.read<String>('event_id'),
+    };
+    final deleted = await (delete(
+      events,
+    )..where((e) => e.id.isNotIn(keep))).go();
+    await customStatement(
+      'DELETE FROM organizers WHERE id NOT IN (SELECT organizer_id FROM '
+      'events) AND id NOT IN (SELECT organizer_id FROM followed_organizers)',
+    );
+    return deleted;
+  });
+
   /// The cities with in-person events in the cache, A to Z.
   Future<List<String>> cities() async {
     final query = selectOnly(events, distinct: true)

@@ -51,6 +51,12 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         (rows) async => (await _withOffers(rows)).firstOrNull,
       );
 
+  /// [organizerId]'s events, soonest first.
+  Stream<List<EventCardRow>> watchCardsBy(String organizerId) =>
+      (_cards()..where(events.organizerId.equals(organizerId)))
+          .watch()
+          .asyncMap(_withOffers);
+
   /// The events you saved, soonest first.
   Stream<List<EventCardRow>> watchSavedCards() =>
       (_cards()..where(savedEvents.eventId.isNotNull())).watch().asyncMap(

@@ -151,7 +151,10 @@ void main() {
     );
 
     expect(find.text('Cancelled by the organizer'), findsOneWidget);
-    expect(find.byIcon(Icons.event_busy), findsOneWidget);
+    // The banner, and the attendance line, which says "Cancelled" instead
+    // of places.
+    expect(find.byIcon(Icons.event_busy), findsNWidgets(2));
+    expect(find.text('Cancelled'), findsOneWidget);
     expect(find.text('This event was cancelled'), findsOneWidget);
   });
 

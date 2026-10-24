@@ -135,6 +135,7 @@ void main() {
 
       await tester.tapAndSettle(find.byTooltip('Settings'));
       expect(appBarTitled('Settings'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('About Evently'), 300);
       await tester.tapAndSettle(find.text('About Evently'));
       expect(appBarTitled('About'), findsOneWidget);
 

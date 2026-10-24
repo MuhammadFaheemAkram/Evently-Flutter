@@ -1,3 +1,4 @@
+import 'package:evently/core/common/guard_write.dart';
 import 'package:evently/core/common/result.dart';
 import 'package:evently/core/database/daos/catalog_dao.dart';
 import 'package:evently/core/database/daos/events_dao.dart';
@@ -31,6 +32,10 @@ class CatalogRepositoryImpl implements CatalogRepository {
         await _catalog.upsertCatalog(catalog.toRows());
         return catalog.events.length;
       });
+
+  @override
+  Future<Result<int>> clearCache() =>
+      guardWrite('Clearing the cache', _catalog.clearUnowned);
 
   @override
   Future<List<String>> cities() => _catalog.cities();

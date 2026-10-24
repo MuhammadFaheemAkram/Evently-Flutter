@@ -16,9 +16,16 @@ class SettingsLocalDataSource {
 
   static const onboardedKey = 'settings.onboarded';
   static const preferredCityKey = 'settings.preferredCity';
+  static const themeModeKey = 'settings.themeMode';
+  static const dynamicColorKey = 'settings.dynamicColor';
 
   /// The only keys the cache loads and allows writing.
-  static const allowList = {onboardedKey, preferredCityKey};
+  static const allowList = {
+    onboardedKey,
+    preferredCityKey,
+    themeModeKey,
+    dynamicColorKey,
+  };
 
   final SharedPreferencesWithCache _preferences;
 

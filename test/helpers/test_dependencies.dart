@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/network/network_simulator.dart';
@@ -6,6 +7,7 @@ import 'package:evently/di/injection.dart';
 import 'package:evently/domain/service/link_opener.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -21,7 +23,8 @@ import 'fakes/recording_link_opener.dart';
 /// - the database lives in memory (and is closed by `getIt.reset()`);
 /// - the simulated network has no latency;
 /// - the clock is fixed at [demoNow], so every rendered event time is known;
-/// - the device is in London ([deviceZone]);
+/// - the device is in London ([deviceZone]), with no wallpaper colors (as
+///   on iOS), and the app is version 1.0.0 (1);
 /// - links go to a [RecordingLinkOpener] (`getIt<LinkOpener>()`).
 ///
 /// Everything else is the real code, so these tests also prove the DI graph
@@ -34,10 +37,19 @@ Future<void> configureTestDependencies({
   // Answered at once: an unanswered platform call before the first pump
   // would wait on fake time forever (§11.44).
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(
-        const MethodChannel('flutter_timezone'),
-        (_) async => deviceZone,
-      );
+    ..setMockMethodCallHandler(
+      const MethodChannel('flutter_timezone'),
+      (_) async => deviceZone,
+    )
+    // No wallpaper palette (as on iOS).
+    ..setMockMethodCallHandler(DynamicColorPlugin.channel, (_) async => null);
+  PackageInfo.setMockInitialValues(
+    appName: 'Evently',
+    packageName: 'co.bitfuse.flutter.evently',
+    version: '1.0.0',
+    buildNumber: '1',
+    buildSignature: '',
+  );
   await configureDependencies();
   getIt
     ..unregister<AppDatabase>()

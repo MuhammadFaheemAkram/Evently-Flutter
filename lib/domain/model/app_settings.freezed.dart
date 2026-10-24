@@ -17,7 +17,9 @@ mixin _$AppSettings {
 
 /// Whether the user has left Welcome (with the demo, or fresh).
  bool get onboarded;/// The city Discover leads with; `null` is "Anywhere".
- String? get preferredCity;
+ String? get preferredCity; AppThemeMode get themeMode;/// Colors from the wallpaper (Android 12+). On by default, as Material
+/// You apps are; ignored where the device has none.
+ bool get dynamicColor;
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,20 +31,20 @@ $AppSettingsCopyWith<AppSettings> get copyWith => _$AppSettingsCopyWithImpl<AppS
 @override
 bool operator ==(Object other) {
   final _this = this as AppSettings;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettings&&(identical(other.onboarded, _this.onboarded) || other.onboarded == _this.onboarded)&&(identical(other.preferredCity, _this.preferredCity) || other.preferredCity == _this.preferredCity));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettings&&(identical(other.onboarded, _this.onboarded) || other.onboarded == _this.onboarded)&&(identical(other.preferredCity, _this.preferredCity) || other.preferredCity == _this.preferredCity)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.dynamicColor, _this.dynamicColor) || other.dynamicColor == _this.dynamicColor));
 }
 
 
 @override
 int get hashCode {
   final _this = this as AppSettings;
-  return Object.hash(runtimeType,_this.onboarded,_this.preferredCity);
+  return Object.hash(runtimeType,_this.onboarded,_this.preferredCity,_this.themeMode,_this.dynamicColor);
 }
 
 @override
 String toString() {
   final _this = this as AppSettings;
-  return 'AppSettings(onboarded: ${_this.onboarded}, preferredCity: ${_this.preferredCity})';
+  return 'AppSettings(onboarded: ${_this.onboarded}, preferredCity: ${_this.preferredCity}, themeMode: ${_this.themeMode}, dynamicColor: ${_this.dynamicColor})';
 }
 
 
@@ -53,7 +55,7 @@ abstract mixin class $AppSettingsCopyWith<$Res>  {
   factory $AppSettingsCopyWith(AppSettings value, $Res Function(AppSettings) _then) = _$AppSettingsCopyWithImpl;
 @useResult
 $Res call({
- bool onboarded, String? preferredCity
+ bool onboarded, String? preferredCity, AppThemeMode themeMode, bool dynamicColor
 });
 
 
@@ -70,11 +72,13 @@ class _$AppSettingsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? onboarded = null,Object? preferredCity = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? onboarded = null,Object? preferredCity = freezed,Object? themeMode = null,Object? dynamicColor = null,}) {
   return _then(AppSettings(
 onboarded: null == onboarded ? _self.onboarded : onboarded // ignore: cast_nullable_to_non_nullable
 as bool,preferredCity: freezed == preferredCity ? _self.preferredCity : preferredCity // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as AppThemeMode,dynamicColor: null == dynamicColor ? _self.dynamicColor : dynamicColor // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -159,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool onboarded,  String? preferredCity)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool onboarded,  String? preferredCity,  AppThemeMode themeMode,  bool dynamicColor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppSettings() when $default != null:
-return $default(_that.onboarded,_that.preferredCity);case _:
+return $default(_that.onboarded,_that.preferredCity,_that.themeMode,_that.dynamicColor);case _:
   return orElse();
 
 }
@@ -180,10 +184,10 @@ return $default(_that.onboarded,_that.preferredCity);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool onboarded,  String? preferredCity)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool onboarded,  String? preferredCity,  AppThemeMode themeMode,  bool dynamicColor)  $default,) {final _that = this;
 switch (_that) {
 case _AppSettings():
-return $default(_that.onboarded,_that.preferredCity);case _:
+return $default(_that.onboarded,_that.preferredCity,_that.themeMode,_that.dynamicColor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +204,10 @@ return $default(_that.onboarded,_that.preferredCity);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool onboarded,  String? preferredCity)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool onboarded,  String? preferredCity,  AppThemeMode themeMode,  bool dynamicColor)?  $default,) {final _that = this;
 switch (_that) {
 case _AppSettings() when $default != null:
-return $default(_that.onboarded,_that.preferredCity);case _:
+return $default(_that.onboarded,_that.preferredCity,_that.themeMode,_that.dynamicColor);case _:
   return null;
 
 }
@@ -215,13 +219,17 @@ return $default(_that.onboarded,_that.preferredCity);case _:
 
 
 class _AppSettings implements AppSettings {
-  const _AppSettings({this.onboarded = false, this.preferredCity});
+  const _AppSettings({this.onboarded = false, this.preferredCity, this.themeMode = AppThemeMode.system, this.dynamicColor = true});
   
 
 /// Whether the user has left Welcome (with the demo, or fresh).
 @override@JsonKey() final  bool onboarded;
 /// The city Discover leads with; `null` is "Anywhere".
 @override final  String? preferredCity;
+@override@JsonKey() final  AppThemeMode themeMode;
+/// Colors from the wallpaper (Android 12+). On by default, as Material
+/// You apps are; ignored where the device has none.
+@override@JsonKey() final  bool dynamicColor;
 
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -233,18 +241,18 @@ _$AppSettingsCopyWith<_AppSettings> get copyWith => __$AppSettingsCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettings&&(identical(other.onboarded, onboarded) || other.onboarded == onboarded)&&(identical(other.preferredCity, preferredCity) || other.preferredCity == preferredCity));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettings&&(identical(other.onboarded, onboarded) || other.onboarded == onboarded)&&(identical(other.preferredCity, preferredCity) || other.preferredCity == preferredCity)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.dynamicColor, dynamicColor) || other.dynamicColor == dynamicColor));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,onboarded,preferredCity);
+    return Object.hash(runtimeType,onboarded,preferredCity,themeMode,dynamicColor);
 }
 
 @override
 String toString() {
-    return 'AppSettings(onboarded: $onboarded, preferredCity: $preferredCity)';
+    return 'AppSettings(onboarded: $onboarded, preferredCity: $preferredCity, themeMode: $themeMode, dynamicColor: $dynamicColor)';
 }
 
 
@@ -255,7 +263,7 @@ abstract mixin class _$AppSettingsCopyWith<$Res> implements $AppSettingsCopyWith
   factory _$AppSettingsCopyWith(_AppSettings value, $Res Function(_AppSettings) _then) = __$AppSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- bool onboarded, String? preferredCity
+ bool onboarded, String? preferredCity, AppThemeMode themeMode, bool dynamicColor
 });
 
 
@@ -272,11 +280,13 @@ class __$AppSettingsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? onboarded = null,Object? preferredCity = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? onboarded = null,Object? preferredCity = freezed,Object? themeMode = null,Object? dynamicColor = null,}) {
   return _then(_AppSettings(
 onboarded: null == onboarded ? _self.onboarded : onboarded // ignore: cast_nullable_to_non_nullable
 as bool,preferredCity: freezed == preferredCity ? _self.preferredCity : preferredCity // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as AppThemeMode,dynamicColor: null == dynamicColor ? _self.dynamicColor : dynamicColor // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

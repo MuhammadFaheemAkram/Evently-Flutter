@@ -8,6 +8,7 @@ import 'package:evently/core/design_system/widgets/event_banner.dart';
 import 'package:evently/core/design_system/widgets/save_button.dart';
 import 'package:evently/domain/calculation/rsvp_rules.dart';
 import 'package:evently/domain/model/event_card_item.dart';
+import 'package:evently/domain/model/event_enums.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// An event in a list: its banner, title, start on the venue's clock,
@@ -105,6 +106,9 @@ class EventCard extends StatelessWidget {
                           ),
                           style: secondary,
                         ),
+                        // Cancelled shows in the attendance line below.
+                        if (event.status == EventStatus.moved)
+                          const EventStatusBadge(status: EventStatus.moved),
                         Text(
                           EventFormats.place(event.location),
                           style: secondary,

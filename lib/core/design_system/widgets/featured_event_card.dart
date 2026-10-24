@@ -6,6 +6,7 @@ import 'package:evently/core/design_system/widgets/attendance_label.dart';
 import 'package:evently/core/design_system/widgets/event_banner.dart';
 import 'package:evently/core/design_system/widgets/save_button.dart';
 import 'package:evently/domain/model/event_card_item.dart';
+import 'package:evently/domain/model/event_enums.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A large event card for a carousel: the banner on top (with Save), then
@@ -104,7 +105,10 @@ class FeaturedEventCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (item.isGoing) const GoingBadge(),
+                  if (event.status != EventStatus.scheduled)
+                    EventStatusBadge(status: event.status)
+                  else if (item.isGoing)
+                    const GoingBadge(),
                 ],
               ),
             ),

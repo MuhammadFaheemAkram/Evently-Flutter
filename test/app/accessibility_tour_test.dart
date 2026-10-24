@@ -99,6 +99,27 @@ void main() {
         await expectAccessible(tester);
       });
 
+      testWidgets('Profile, a fresh start', (tester) async {
+        await open(tester, at: '/profile', withDemo: false);
+        expect(find.text('No profile yet'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Following, nobody yet', (tester) async {
+        await open(tester, at: '/following', withDemo: false);
+        expect(find.text("You don't follow anyone yet"), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Edit profile, with errors after Save', (tester) async {
+        await open(tester, at: '/profile/edit');
+        await tester.enterText(find.byType(TextField).at(1), 'sara');
+        await tester.tap(find.text('Save'));
+        await tester.pumpAndSettle();
+        expect(find.text('Enter an email like name@example.com.'), findsOne);
+        await expectAccessible(tester);
+      });
+
       testWidgets('the navigation drawer', (tester) async {
         await open(tester, at: '/discover');
         await tester.openDrawer();
@@ -125,7 +146,7 @@ void main() {
         ('Agenda, with clashes', '/events/ev_design_conf/agenda'),
         ('Ticket', '/tickets/tkt_demo_design_conf'),
         ('Ticket, past', '/tickets/tkt_demo_accessibility'),
-        ('Organizer', '/organizers/o1'),
+        ('Organizer', '/organizers/org_flutter_london'),
         ('Following', '/following'),
         ('Edit profile', '/profile/edit'),
         ('Settings', '/settings'),

@@ -84,6 +84,32 @@ void main() {
     );
   });
 
+  test('appearance: saved and read back', () async {
+    final settings = await repository();
+
+    await settings.update(
+      (s) => s.copyWith(themeMode: AppThemeMode.dark, dynamicColor: false),
+    );
+
+    expect(
+      (await repository()).current,
+      const AppSettings(themeMode: AppThemeMode.dark, dynamicColor: false),
+    );
+  });
+
+  test(
+    'a theme mode this version does not know falls back to System',
+    () async {
+      deviceHolds({'settings.themeMode': 'sepia'});
+
+      expect((await repository()).current.themeMode, AppThemeMode.system);
+    },
+  );
+
+  test('dynamic color is on by default', () async {
+    expect((await repository()).current.dynamicColor, isTrue);
+  });
+
   test('watch: the current settings on listen, then each change', () async {
     final settings = await repository();
     final seen = <AppSettings>[];

@@ -97,6 +97,30 @@ void main() {
       expect(text('Sat 24 Oct, 6:30 PM BST'), findsOneWidget);
     });
 
+    testWidgets("the organizer's word: Cancelled (instead of places), "
+        'Moved', (tester) async {
+      await pumpCard(
+        tester,
+        block: RsvpBlock.cancelled,
+        shown: event(status: EventStatus.cancelled),
+      );
+      expect(find.text('Cancelled'), findsOneWidget);
+      expect(find.byIcon(Icons.event_busy), findsOneWidget);
+      expect(find.textContaining('places left'), findsNothing);
+      expect(find.text('RSVP'), findsNothing);
+
+      await pumpCard(
+        tester,
+        block: null,
+        shown: event(
+          status: EventStatus.moved,
+          previousStart: DateTime.utc(2026, 10, 23, 17, 30),
+        ),
+      );
+      expect(find.text('Moved'), findsOneWidget);
+      expect(find.byIcon(Icons.update), findsOneWidget);
+    });
+
     testWidgets('at large text the actions go under the attendance', (
       tester,
     ) async {
@@ -207,6 +231,25 @@ void main() {
       );
       handle.dispose();
     });
+  });
+
+  testWidgets('a featured card says Moved or Cancelled, over Going', (
+    tester,
+  ) async {
+    tester.usePhoneSurface();
+    await tester.pumpThemed(
+      SizedBox(
+        height: 400,
+        child: FeaturedEventCard(
+          item: card(event(status: EventStatus.cancelled), isGoing: true),
+          onTap: () {},
+          onToggleSaved: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('Going'), findsNothing);
   });
 
   test('initials: the first letters of the first two words', () {

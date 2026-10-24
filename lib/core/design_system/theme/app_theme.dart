@@ -23,6 +23,12 @@ abstract final class AppTheme {
     dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
   );
 
+  /// Themes from another seed: the wallpaper's color, with dynamic color.
+  /// The state and category colors stay the app's own (they carry meaning
+  /// and are contrast-tested).
+  static ThemeData fromSeed(Color seed, Brightness brightness) =>
+      fromScheme(ColorScheme.fromSeed(seedColor: seed, brightness: brightness));
+
   static ThemeData fromScheme(ColorScheme colorScheme) {
     return ThemeData(
       colorScheme: colorScheme,

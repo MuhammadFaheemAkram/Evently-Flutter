@@ -26,7 +26,7 @@ import 'package:injectable/injectable.dart';
 /// A booking is checked here too, whatever the app already checked: the
 /// event exists and isn't cancelled or started, the type is sold, a place
 /// is left, and you aren't going already.
-@LazySingleton(as: EventlyApi)
+@lazySingleton
 class FakeEventlyApi implements EventlyApi {
   FakeEventlyApi(
     this._json,
@@ -37,6 +37,7 @@ class FakeEventlyApi implements EventlyApi {
 
   static const catalogPath = 'assets/json/catalog_seed.json';
   static const demoUserPath = 'assets/json/demo_user.json';
+  static const updatePath = 'assets/json/catalog_update.json';
 
   final AssetJsonLoader _json;
   final NetworkSimulator _network;
@@ -48,6 +49,22 @@ class FakeEventlyApi implements EventlyApi {
 
   /// Active tickets the server knows, by event id.
   final _activeTicketByEvent = <String, String>{};
+
+  /// Whether the developer published the catalog update.
+  var _updated = false;
+
+  /// From now on, every catalog includes `catalog_update.json`: an event
+  /// moves (a day later), another is cancelled, one is edited, and new ones
+  /// appear. In memory, like the rest: a restart takes it back.
+  ///
+  /// Returns what changed, for the developer's SnackBar.
+  Future<String> publishUpdate() async {
+    final update = await _json.loadObject(updatePath);
+    _updated = true;
+    int count(String key) => (update[key]! as List).length;
+    return '${count('moves')} moved, ${count('cancels')} cancelled, '
+        '${count('edits')} edited, ${count('events')} new';
+  }
 
   @override
   Future<CatalogDto> fetchCatalog() async {
@@ -129,12 +146,22 @@ class FakeEventlyApi implements EventlyApi {
     _taken[key] = (_taken[key] ?? 0) + places;
   }
 
-  /// The catalog as of now, with the places taken since launch applied.
+  /// The catalog as of now: the seed (with the update, once published),
+  /// and the places taken since launch.
   Future<Map<String, dynamic>> _catalogJson() async {
     final seed = await _json.loadObject(catalogPath);
-    final catalog = SeedRenderer.catalog(seed, _clock.now());
-    for (final event
-        in (catalog['events']! as List).cast<Map<String, dynamic>>()) {
+    final now = _clock.now();
+    final Map<String, dynamic> catalog;
+    if (_updated) {
+      // Where the moved events were, before they moved.
+      final before = _byId(SeedRenderer.catalog(seed, now));
+      final update = await _json.loadObject(updatePath);
+      catalog = SeedRenderer.catalog(_applyUpdate(seed, update), now);
+      _markChanges(catalog, update, before);
+    } else {
+      catalog = SeedRenderer.catalog(seed, now);
+    }
+    for (final event in _events(catalog)) {
       final offers = _offers(event);
       for (final offer in offers) {
         final taken = _taken['${event['id']}/${offer['type']}'] ?? 0;
@@ -151,6 +178,74 @@ class FakeEventlyApi implements EventlyApi {
     }
     return catalog;
   }
+
+  /// The seed with the update applied: moved events start (and end) later
+  /// by whole days, and the new events added.
+  static Map<String, dynamic> _applyUpdate(
+    Map<String, dynamic> seed,
+    Map<String, dynamic> update,
+  ) {
+    final moves = {
+      for (final move in _list(update['moves']))
+        move['eventId']! as String: move['byDays']! as int,
+    };
+    final edits = {
+      for (final edit in _list(update['edits']))
+        edit['eventId']! as String: edit['description']! as String,
+    };
+    Map<String, dynamic> shifted(Map<String, dynamic> at, int days) => {
+      ...at,
+      'inDays': (at['inDays']! as int) + days,
+    };
+    return {
+      ...seed,
+      'events': [
+        for (final event in _list(seed['events']))
+          {
+            ...event,
+            if (moves[event['id']] case final days?) ...{
+              'starts': shifted(event['starts']! as Map<String, dynamic>, days),
+              'ends': shifted(event['ends']! as Map<String, dynamic>, days),
+            },
+            // Left out when there's no edit: the seed's stays.
+            'description': ?edits[event['id']],
+          },
+        ..._list(update['events']),
+      ],
+    };
+  }
+
+  /// The organizer's word on the changed events: moved (with where they
+  /// were) or cancelled.
+  static void _markChanges(
+    Map<String, dynamic> catalog,
+    Map<String, dynamic> update,
+    Map<String, Map<String, dynamic>> before,
+  ) {
+    final moved = {
+      for (final move in _list(update['moves'])) move['eventId']! as String,
+    };
+    final cancelled = {...(update['cancels']! as List).cast<String>()};
+    for (final event in _events(catalog)) {
+      final id = event['id']! as String;
+      if (cancelled.contains(id)) {
+        event['status'] = EventStatus.cancelled.name;
+      } else if (moved.contains(id)) {
+        event['status'] = EventStatus.moved.name;
+        event['previousStartsAt'] = before[id]!['startsAt'];
+      }
+    }
+  }
+
+  static Map<String, Map<String, dynamic>> _byId(
+    Map<String, dynamic> catalog,
+  ) => {for (final event in _events(catalog)) event['id']! as String: event};
+
+  static List<Map<String, dynamic>> _events(Map<String, dynamic> catalog) =>
+      (catalog['events']! as List).cast<Map<String, dynamic>>();
+
+  static List<Map<String, dynamic>> _list(Object? json) =>
+      ((json as List?) ?? const []).cast<Map<String, dynamic>>();
 
   Future<Map<String, dynamic>?> _eventJson(String eventId) async {
     final events = ((await _catalogJson())['events']! as List)

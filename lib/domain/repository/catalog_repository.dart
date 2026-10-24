@@ -9,6 +9,10 @@ abstract interface class CatalogRepository {
   /// the number of events it holds. On any failure the cache is as it was.
   Future<Result<int>> refresh();
 
+  /// Deletes the cached events nothing of the user's points at; how many
+  /// went. The next refresh fetches them again.
+  Future<Result<int>> clearCache();
+
   /// The cities with in-person events in the cache, A to Z.
   Future<List<String>> cities();
 

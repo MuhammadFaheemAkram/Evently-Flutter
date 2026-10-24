@@ -56,6 +56,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
           ? await _local.remove(_Keys.preferredCityKey)
           : await _local.setString(_Keys.preferredCityKey, city);
     }
+    if (before.themeMode != after.themeMode) {
+      await _local.setString(_Keys.themeModeKey, after.themeMode.name);
+    }
+    if (before.dynamicColor != after.dynamicColor) {
+      await _local.setBool(_Keys.dynamicColorKey, value: after.dynamicColor);
+    }
   }
 
   /// Closes the change stream (for tests: the app keeps one repository for
@@ -67,6 +73,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
     return AppSettings(
       onboarded: local.getBool(_Keys.onboardedKey) ?? defaults.onboarded,
       preferredCity: local.getString(_Keys.preferredCityKey),
+      // A value this version doesn't know (a later one wrote it) falls
+      // back to the default rather than failing.
+      themeMode:
+          AppThemeMode.values.asNameMap()[local.getString(
+            _Keys.themeModeKey,
+          )] ??
+          defaults.themeMode,
+      dynamicColor:
+          local.getBool(_Keys.dynamicColorKey) ?? defaults.dynamicColor,
     );
   }
 }

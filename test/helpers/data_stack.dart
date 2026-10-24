@@ -5,11 +5,14 @@ import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/network/asset_json_loader.dart';
 import 'package:evently/core/network/evently_api.dart';
+import 'package:evently/core/network/fake_developer_tools.dart';
 import 'package:evently/core/network/fake_evently_api.dart';
 import 'package:evently/core/network/network_simulator.dart';
 import 'package:evently/data/repository/booking_repository_impl.dart';
 import 'package:evently/data/repository/catalog_repository_impl.dart';
 import 'package:evently/data/repository/demo_repository_impl.dart';
+import 'package:evently/data/repository/organizer_repository_impl.dart';
+import 'package:evently/data/repository/profile_repository_impl.dart';
 import 'package:evently/data/repository/recent_searches_repository_impl.dart';
 import 'package:evently/data/repository/saved_event_repository_impl.dart';
 import 'package:evently/data/repository/schedule_repository_impl.dart';
@@ -18,6 +21,8 @@ import 'package:evently/domain/usecase/booking_use_cases.dart';
 import 'package:evently/domain/usecase/catalog_use_cases.dart';
 import 'package:evently/domain/usecase/event_use_cases.dart';
 import 'package:evently/domain/usecase/open_link_use_case.dart';
+import 'package:evently/domain/usecase/organizer_use_cases.dart';
+import 'package:evently/domain/usecase/profile_use_cases.dart';
 import 'package:evently/domain/usecase/schedule_use_cases.dart';
 import 'package:evently/domain/usecase/search_use_cases.dart';
 import 'package:evently/domain/usecase/settings_use_cases.dart';
@@ -41,7 +46,7 @@ class DataStack {
     : clock = Clock.fixed(now ?? demoNow),
       network = NetworkSimulator(latency: Duration.zero) {
     // Seeded: the server's ticket codes repeat from run to run.
-    realApi = FakeEventlyApi(
+    realApi = server = FakeEventlyApi(
       AssetJsonLoader(rootBundle),
       network,
       clock,
@@ -52,6 +57,9 @@ class DataStack {
 
   final Clock clock;
   final NetworkSimulator network;
+
+  /// The fake server, as the developer tools reach it.
+  late final FakeEventlyApi server;
   late final EventlyApi realApi;
   late final EventlyApi api;
   final AppDatabase db = newTestDatabase();
@@ -71,6 +79,12 @@ class DataStack {
   late final eventClock = EventClock(clock, londonZone);
   final links = RecordingLinkOpener();
   late final booking = BookingRepositoryImpl(api, db.ticketsDao, clock);
+  late final organizers = OrganizerRepositoryImpl(
+    db.organizersDao,
+    db.eventsDao,
+    clock,
+  );
+  late final profile = ProfileRepositoryImpl(db.profileDao);
   late final schedule = ScheduleRepositoryImpl(db.sessionBookmarksDao, clock);
   late final demo = DemoRepositoryImpl(api, db.userDataDao);
 
@@ -94,6 +108,23 @@ class DataStack {
   late final watchTicket = WatchTicketUseCase(booking);
   late final watchAgenda = WatchAgendaUseCase(schedule);
   late final setSessionBookmarked = SetSessionBookmarkedUseCase(schedule);
+  late final watchOrganizer = WatchOrganizerUseCase(organizers);
+  late final watchFollowing = WatchFollowingUseCase(organizers, eventClock);
+  late final setFollowing = SetFollowingUseCase(organizers);
+  late final watchProfile = WatchProfileUseCase(profile);
+  late final watchProfileCounts = WatchProfileCountsUseCase(
+    profile,
+    eventClock,
+  );
+  late final updateProfile = UpdateProfileUseCase(profile);
+  late final updateThemeMode = UpdateThemeModeUseCase(settings);
+  late final updateDynamicColor = UpdateDynamicColorUseCase(settings);
+  late final updatePreferredCity = UpdatePreferredCityUseCase(settings);
+  late final clearCache = ClearCacheUseCase(catalog);
+  late final resetDemoData = ResetDemoDataUseCase(catalog, demo);
+  late final developer = DeveloperToolsUseCase(
+    FakeDeveloperTools(network, server),
+  );
 
   /// Fetches the catalog and the demo user, as "Explore with demo data"
   /// does.

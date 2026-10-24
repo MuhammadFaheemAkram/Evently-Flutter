@@ -5,15 +5,22 @@ import 'package:evently/core/common/event_clock.dart';
 import 'package:evently/core/database/app_database.dart';
 import 'package:evently/core/database/daos/catalog_dao.dart';
 import 'package:evently/core/database/daos/events_dao.dart';
+import 'package:evently/core/database/daos/organizers_dao.dart';
+import 'package:evently/core/database/daos/profile_dao.dart';
 import 'package:evently/core/database/daos/recent_searches_dao.dart';
 import 'package:evently/core/database/daos/saved_events_dao.dart';
 import 'package:evently/core/database/daos/session_bookmarks_dao.dart';
 import 'package:evently/core/database/daos/tickets_dao.dart';
 import 'package:evently/core/database/daos/user_data_dao.dart';
+import 'package:evently/core/network/evently_api.dart';
+import 'package:evently/core/network/fake_evently_api.dart';
 import 'package:evently/core/storage/settings_local_data_source.dart';
+import 'package:evently/domain/model/device_info.dart';
+import 'package:evently/domain/service/dynamic_color_source.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:injectable/injectable.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -21,6 +28,11 @@ import 'package:timezone/timezone.dart' as tz;
 /// in tests) like everything else.
 @module
 abstract class AppModule {
+  /// The server the app talks to: the in-memory fake, which the developer
+  /// tools also reach (to publish a catalog update).
+  @lazySingleton
+  EventlyApi api(FakeEventlyApi fake) => fake;
+
   /// The asset bundle the fake API reads its seed files from.
   @lazySingleton
   AssetBundle get assetBundle => rootBundle;
@@ -47,6 +59,12 @@ abstract class AppModule {
   @lazySingleton
   RecentSearchesDao recentSearchesDao(AppDatabase database) =>
       database.recentSearchesDao;
+
+  @lazySingleton
+  OrganizersDao organizersDao(AppDatabase database) => database.organizersDao;
+
+  @lazySingleton
+  ProfileDao profileDao(AppDatabase database) => database.profileDao;
 
   @lazySingleton
   TicketsDao ticketsDao(AppDatabase database) => database.ticketsDao;
@@ -86,4 +104,24 @@ abstract class AppModule {
       return DeviceTimeZone(tz.UTC);
     }
   }
+
+  /// Read once before the first frame, like the preferences: About and
+  /// Settings show the version without a loading state.
+  @preResolve
+  @lazySingleton
+  Future<AppInfo> get appInfo async {
+    final info = await PackageInfo.fromPlatform();
+    return AppInfo(
+      name: info.appName,
+      version: info.version,
+      buildNumber: info.buildNumber,
+    );
+  }
+
+  /// The wallpaper's color, before the first frame: the first frame is
+  /// already in the right colors.
+  @preResolve
+  @lazySingleton
+  Future<DeviceColors> deviceColors(DynamicColorSource source) async =>
+      DeviceColors(wallpaperColor: await source.wallpaperColor());
 }

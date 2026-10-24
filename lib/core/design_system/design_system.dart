@@ -26,5 +26,6 @@ export 'package:evently/core/design_system/widgets/organizer_card.dart';
 export 'package:evently/core/design_system/widgets/save_button.dart';
 export 'package:evently/core/design_system/widgets/schedule_session_card.dart';
 export 'package:evently/core/design_system/widgets/section_header.dart';
+export 'package:evently/core/design_system/widgets/segmented_choice.dart';
 export 'package:evently/core/design_system/widgets/ticket_widgets.dart';
 export 'package:evently/core/design_system/widgets/zoned_time_text.dart';

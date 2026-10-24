@@ -43,8 +43,8 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 | Phase | Scope | Status |
 |------:|-------|:------:|
 | 1 | Foundation: FVM project, design system base with the category palette, typed routes with a first-launch gate, 5-tab shell with a navigation drawer, CI | ✅ Done |
-| 2 | Data models with time zones, the drift cache (catalog and user tables), the fake API, Welcome | ⏳ Next |
-| 3 | Discover and Event detail | |
+| 2 | Data models with time zones, the drift cache (catalog and user tables), the fake API, Welcome | ✅ Done |
+| 3 | Discover and Event detail | ⏳ Next |
 | 4 | Search and Saved | |
 | 5 | RSVP, tickets and the agenda | |
 | 6 | Organizers, profile and settings | |
@@ -81,9 +81,14 @@ Packages arrive in the phase that first needs them.
 | Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`, a first-launch `redirect`) | 1 |
 | Dependency injection | `get_it` + `injectable` (a code-generated composition root) | 1 |
 | Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
-| Testing | `flutter_test` | 1 |
+| State | `flutter_bloc` (Cubits) | 2 |
+| Models | `freezed` + `json_serializable` (checked DTOs) | 2 |
+| Database | `drift` + `drift_flutter` (catalog and user tables, `CHECK`s, a partial unique index, `shareAcrossIsolates`; schema exported to `drift_schemas/`) | 2 |
+| Preferences | `shared_preferences` (`SharedPreferencesWithCache`, resolved before `runApp`) | 2 |
+| Time | `timezone` (each event's IANA zone), `clock`, `intl` | 2 |
+| Testing | `flutter_test`, `bloc_test`, `mocktail`, `fake_async` | 1, 2 |
 
-Planned: `flutter_bloc`, `freezed`, `json_serializable`, `drift`, `shared_preferences`, `clock`, `intl`, `timezone` (Phase 2); `url_launcher` (Phase 3); `bloc_concurrency`, `stream_transform` (Phase 4); `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
+Planned: `flutter_timezone`, `url_launcher` (Phase 3); `bloc_concurrency`, `stream_transform` (Phase 4); `qr_flutter` (Phase 5); `dynamic_color`, `package_info_plus` (Phase 6); `flutter_local_notifications`, `workmanager` (Phase 7).
 
 ---
 
@@ -94,9 +99,9 @@ A clean, layered architecture with a one-directional data flow:
 ```
 lib/
 ├── app/        → root widget (MaterialApp.router, themes)
-├── core/       → design system, navigation, (later) the database, the fake API, notifications, background work
-├── data/       → repository implementations + mappers               (Phase 2)
-├── domain/     → models, pure calculations, contracts, use cases     (Phase 2)
+├── core/       → design system, navigation, the database, the fake API, preferences; (later) notifications, background work
+├── data/       → repository implementations, mappers, the API guard
+├── domain/     → models, contracts, use cases (pure Dart)
 ├── features/   → one folder per screen (Page + View + Cubit/Bloc)
 └── di/         → composition root (get_it + injectable)
 ```
@@ -104,7 +109,7 @@ lib/
 **Navigation:**
 
 ```
-GoRouter ── redirect: firstLaunchRedirect(onboarded, location)   ◀── refreshListenable
+GoRouter ── redirect: firstLaunchRedirect(onboarded, location)   ◀── refreshListenable (the saved settings)
   │
   ├─ /welcome          (until the user has started)
   │
@@ -117,12 +122,27 @@ GoRouter ── redirect: firstLaunchRedirect(onboarded, location)   ◀── r
 ```
 
 Key rules:
-- **The router owns the gate.** No screen navigates after Welcome's choice: it records the choice, and `refreshListenable` re-runs the pure `firstLaunchRedirect`.
+- **The router owns the gate.** No screen navigates after Welcome's choice: it saves the choice, and `refreshListenable` (a `StreamListenable` over the settings) re-runs the pure `firstLaunchRedirect`.
 - **Typed routes only:** no string paths in widgets.
 - **Tabs and a drawer, as in the Android edition.** The five tabs are a `NavigationBar`; Following, Settings and About live in a drawer that slides over the whole screen. Every tab's app bar opens it, and Profile also opens Settings.
 - **Screens above the tabs** are pushed on the root navigator, so Back, and the iOS edge swipe, return to the tab with its state intact. Links work: `/events/e1/rsvp` opens the booking dialog over its event, and a link opened cold gets a Close button.
 - **Widgets render state; logic lives elsewhere.** Each screen is a Page plus a View.
 - **Layer boundaries:** `domain/` is pure Dart, Views never import `data/`, and only `data/` touches the database and the API.
+
+**Data:**
+
+```
+FakeEventlyApi (seed rendered as of now, 700 ms) ─▶ checked DTOs ─▶ mappers (rules) ─▶ drift
+                                                                                       │
+   catalog: organizers, events (+ offers, sessions)   ◀── user rows point here, never CASCADE
+   user:    saved, tickets (one active per event), bookmarks, follows, reminders, changes, searches, profile
+                                                                                       │
+                                      every screen reads the database, never the API ◀─┘
+```
+
+- **Time:** an event is two UTC instants plus its venue's IANA zone (`EventTime`), told in the venue's local time.
+- **The server's data and the user's, apart:** a refresh upserts the catalog in one transaction (`ON CONFLICT DO UPDATE`, never `REPLACE`, never deleting); "saved" and "going" are the user's own rows.
+- **Failures are values:** repositories return a `Result` with an `AppException` (offline, damaged data, unknown); on any failure nothing is written.
 
 ---
 
@@ -133,17 +153,25 @@ Evently/
 ├── .fvmrc                          # pinned Flutter version (3.47.6)
 ├── .github/workflows/flutter-ci.yml
 ├── analysis_options.yaml           # lints + strict analyzer modes
-├── build.yaml                      # lint-free generated files
+├── build.yaml                      # drift options, lint-free generated files
+├── assets/json/                    # catalog_seed.json, demo_user.json (the fake API's seed)
+├── drift_schemas/                  # each exported schema version
 ├── lib/
-│   ├── main.dart                   # binding → configureDependencies() → runApp
+│   ├── main.dart                   # binding → time zones → configureDependencies() → runApp
 │   ├── app/                        # EventlyApp: themes and the router
 │   ├── core/
+│   │   ├── common/                 # Result, AppException
+│   │   ├── database/               # tables/, app_database, daos/ (catalog, user data), converters
 │   │   ├── design_system/          # theme/ (AppTheme, AppColors, CategoryPalette, tokens), widgets/ (state views, SectionHeader), large_text
-│   │   └── navigation/             # app_routes (+ .g.dart), app_router, first_launch_redirect, fallback Close button
+│   │   ├── navigation/             # app_routes (+ .g.dart), app_router, first_launch_redirect, stream_listenable, fallback Close button
+│   │   ├── network/                # EventlyApi, FakeEventlyApi, SeedRenderer, NetworkSimulator, dto/
+│   │   └── storage/                # SettingsLocalDataSource (the preference keys)
+│   ├── data/                       # mapper/, repository/ (+ the API guard)
+│   ├── domain/                     # model/, repository/ (contracts), usecase/
 │   ├── features/                   # welcome, shell (tabs + drawer), discover, search, saved, tickets, profile,
 │   │                               # event_detail, rsvp, agenda, ticket_detail, organizer, following, profile_edit, settings, about
-│   └── di/                         # injection.dart (+ .config.dart)
-└── test/                           # mirrors lib/, plus app/ (the accessibility tour) and helpers/
+│   └── di/                         # injection.dart (+ .config.dart), app_module.dart
+└── test/                           # mirrors lib/, plus app/ (flows, the accessibility tour) and helpers/ (the test stack, fixtures, fakes)
 ```
 
 ---
@@ -177,11 +205,18 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**122 tests** after Phase 1:
-- **Navigation:** every rule of the first-launch gate; typed locations, ids encoded; the app on its real DI graph (first launch and both choices, each tab, the drawer over every tab, Following, Settings and About above the tabs with Back, Edit profile as a full-screen dialog, Settings from Profile, the RSVP dialog and the agenda over their event, deep links with a Close button, an unknown location).
-- **Design system:** the themes, WCAG AA contrast of every state color (going, sold out, moved, cancelled) on the page, cards and filled fields, and of all eight category colors with their text, in both themes; each category's own icon.
-- **The drawer:** its order, the selected tab, where each item leads, and its width at large text.
-- **The accessibility tour:** Welcome, the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
+**312 tests** after Phase 2:
+- **Time and models:** `EventTime` in four zones, across both clock changes (a skipped and a repeated hour) and midnight, end-exclusive; places left, sold out, free, online.
+- **The database:** every `CHECK`, foreign keys on, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; the demo write replacing all in one transaction.
+- **The fake API and its seed:** relative times rendered with the venue's offset from the venue's today; latency and failures; the bundled seed passing every check as of six instants (both clock changes, New Year's Eve).
+- **Mappers:** every catalog and demo rule, one test each.
+- **Repositories:** success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed.
+- **Welcome:** the Cubit and the view in every state; first launch on the real DI graph (demo in a city, fresh, offline, a failed demo and Try again).
+- **Navigation:** every rule of the first-launch gate; typed locations, ids encoded; the app on its real DI graph (each tab, the drawer over every tab, Following, Settings and About above the tabs with Back, Edit profile as a full-screen dialog, Settings from Profile, the RSVP dialog and the agenda over their event, deep links with a Close button, an unknown location).
+- **Design system:** the themes, WCAG AA contrast of every state color and all eight category colors, in both themes; each category's own icon; the drawer.
+- **The accessibility tour:** Welcome (choosing a city, and offline), the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 %.
+
+Twenty-five mutation checks (the code broken on purpose, one rule at a time) are each caught; see the [Phase 2 summary](docs/PHASE_2_SUMMARY.md).
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -209,6 +244,7 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 ## 📚 Documentation
 
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
+- [Phase 2 — Data layer](docs/PHASE_2_SUMMARY.md)
 
 ---
 

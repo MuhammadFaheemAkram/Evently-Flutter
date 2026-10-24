@@ -1,0 +1,82 @@
+{
+  "profile": {
+    "name": "Sara Ahmed",
+    "email": "sara.ahmed@example.com"
+  },
+  "saved": [
+    {
+      "eventId": "ev_jazz_vaults",
+      "daysAgo": 2
+    },
+    {
+      "eventId": "ev_design_conf",
+      "daysAgo": 14
+    },
+    {
+      "eventId": "ev_ai_summit",
+      "daysAgo": 6
+    },
+    {
+      "eventId": "ev_burnout_proof",
+      "daysAgo": 1
+    }
+  ],
+  "tickets": [
+    {
+      "id": "tkt_demo_flutter_london",
+      "eventId": "ev_flutter_london_meetup",
+      "code": "EVT-7KQ2-M9XX",
+      "type": "free",
+      "note": "",
+      "bookedDaysAgo": 5
+    },
+    {
+      "id": "tkt_demo_design_conf",
+      "eventId": "ev_design_conf",
+      "code": "EVT-H4TW-8RCW",
+      "type": "standard",
+      "note": "Vegetarian lunch, please.",
+      "bookedDaysAgo": 12
+    },
+    {
+      "id": "tkt_demo_dart_patterns",
+      "eventId": "ev_dart_patterns_live",
+      "code": "EVT-P3VN-6ZEU",
+      "type": "free",
+      "note": "",
+      "bookedDaysAgo": 2
+    },
+    {
+      "id": "tkt_demo_accessibility",
+      "eventId": "ev_accessibility_talk",
+      "code": "EVT-B8DS-5LU9",
+      "type": "free",
+      "note": "",
+      "bookedDaysAgo": 20
+    }
+  ],
+  "bookmarks": [
+    {
+      "sessionId": "ses_conf_trust",
+      "daysAgo": 10
+    },
+    {
+      "sessionId": "ses_conf_type",
+      "daysAgo": 10
+    },
+    {
+      "sessionId": "ses_conf_tokens",
+      "daysAgo": 9
+    }
+  ],
+  "follows": [
+    {
+      "organizerId": "org_flutter_london",
+      "daysAgo": 40
+    },
+    {
+      "organizerId": "org_berlin_design",
+      "daysAgo": 21
+    }
+  ]
+}

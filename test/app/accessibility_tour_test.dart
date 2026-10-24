@@ -1,3 +1,4 @@
+import 'package:evently/core/network/network_simulator.dart';
 import 'package:evently/di/injection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,12 +18,18 @@ void main() {
         WidgetTester tester, {
         required String at,
         bool onboarded = true,
+        bool offline = false,
       }) async {
         tester.platformDispatcher
           ..textScaleFactorTestValue = 2
           ..platformBrightnessTestValue = brightness;
         addTearDown(tester.platformDispatcher.clearAllTestValues);
-        await pumpEvently(tester, onboarded: onboarded, initialLocation: at);
+        await pumpEvently(
+          tester,
+          onboarded: onboarded,
+          initialLocation: at,
+          beforeLaunch: () => getIt<NetworkSimulator>().failRequests = offline,
+        );
         // Phone width, but tall enough to lay out every item of a long list:
         // the checks below see only what is built.
         tester.view.physicalSize = const Size(390 * 3, 6000 * 3);
@@ -40,8 +47,16 @@ void main() {
         handle.dispose();
       }
 
-      testWidgets('Welcome', (tester) async {
+      testWidgets('Welcome, choosing a city', (tester) async {
         await open(tester, at: '/welcome', onboarded: false);
+        await tester.pumpUntilFound(find.text('Anywhere'));
+        await tester.tapAndSettle(find.text('New York'));
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Welcome, offline', (tester) async {
+        await open(tester, at: '/welcome', onboarded: false, offline: true);
+        await tester.pumpUntilFound(find.text('Try again'));
         await expectAccessible(tester);
       });
 

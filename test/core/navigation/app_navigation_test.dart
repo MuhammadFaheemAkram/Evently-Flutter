@@ -13,7 +13,7 @@ void main() {
     testWidgets('opens on Welcome, without the tab bar', (tester) async {
       await pumpEvently(tester, onboarded: false);
 
-      expect(find.text('Explore with demo data'), findsOneWidget);
+      await tester.pumpUntilFound(find.text('Explore with demo data'));
       expect(find.byType(NavigationBar), findsNothing);
     });
 
@@ -24,7 +24,7 @@ void main() {
         initialLocation: '/events/e1',
       );
 
-      expect(find.text('Explore with demo data'), findsOneWidget);
+      await tester.pumpUntilFound(find.text('Explore with demo data'));
     });
 
     for (final choice in ['Explore with demo data', 'Start fresh']) {
@@ -33,7 +33,7 @@ void main() {
       ) async {
         await pumpEvently(tester, onboarded: false);
 
-        await tester.tapAndSettle(find.text(choice));
+        await tester.startFromWelcome(choice);
 
         expect(appBarTitled('Discover'), findsOneWidget);
         expect(tester.selectedTab, 0);

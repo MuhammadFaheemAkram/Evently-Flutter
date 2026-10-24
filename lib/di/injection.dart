@@ -13,7 +13,9 @@ final GetIt getIt = GetIt.instance;
 /// and wired together (the role of Hilt modules in the Android edition).
 ///
 /// `injectable` generates `getIt.init()` from the annotations under `lib/`.
-/// It becomes async in Phase 2, when the preferences must be ready before the
-/// first frame (`@preResolve`).
+/// It is async because the `@preResolve` dependencies (the preferences) must
+/// be ready before the first frame.
 @InjectableInit()
-void configureDependencies() => getIt.init();
+Future<void> configureDependencies() async {
+  await getIt.init();
+}

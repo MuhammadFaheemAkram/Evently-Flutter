@@ -1,0 +1,1031 @@
+{
+  "organizers": [
+    {
+      "id": "org_flutter_london",
+      "name": "Flutter London",
+      "bio": "A community of Flutter and Dart developers meeting monthly in London, and online for everyone else.",
+      "followers": 2400
+    },
+    {
+      "id": "org_berlin_design",
+      "name": "Berlin Design Collective",
+      "bio": "Designers, researchers and makers sharing their craft: talks, walks and a yearly conference.",
+      "followers": 1800
+    },
+    {
+      "id": "org_nyc_tech",
+      "name": "NYC Tech Forum",
+      "bio": "Founders and engineers in New York: summits, breakfasts and late-night hack sessions.",
+      "followers": 5200
+    },
+    {
+      "id": "org_lahore_startups",
+      "name": "Lahore Startup Circle",
+      "bio": "Helping Lahore's founders, students and teachers build, learn and meet.",
+      "followers": 950
+    },
+    {
+      "id": "org_city_run_club",
+      "name": "City Run Club",
+      "bio": "Free runs, games and outdoor sessions in the cities we love. All paces welcome.",
+      "followers": 610
+    },
+    {
+      "id": "org_soundwaves",
+      "name": "Soundwaves Live",
+      "bio": "Live music nights, from jazz cellars to open-air stages.",
+      "followers": 8900
+    }
+  ],
+  "events": [
+    {
+      "id": "ev_flutter_london_meetup",
+      "title": "Flutter London: State of Flutter",
+      "description": "Our monthly meetup: what's new in Flutter and Dart, a talk on offline-first apps, and pizza. Beginners welcome.",
+      "category": "technology",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 0,
+        "at": "18:30"
+      },
+      "ends": {
+        "inDays": 0,
+        "at": "21:00"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 120,
+          "remaining": 14
+        }
+      ],
+      "venue": {
+        "name": "Code Hub",
+        "address": "1 Finsbury Avenue",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_dart_workshop",
+      "title": "Dart Macros Workshop",
+      "description": "A hands-on day writing Dart code generators and macros, from the basics to publishing a package. Bring a laptop.",
+      "category": "technology",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 9,
+        "at": "10:00"
+      },
+      "ends": {
+        "inDays": 9,
+        "at": "16:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "workshop",
+          "priceMinor": 4900,
+          "currency": "GBP",
+          "capacity": 30,
+          "remaining": 0
+        }
+      ],
+      "venue": {
+        "name": "Code Hub",
+        "address": "1 Finsbury Avenue",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_thames_10k",
+      "title": "Thames Sunrise 10K",
+      "description": "A relaxed 10K along the river at sunrise, with coffee at the finish. All paces welcome.",
+      "category": "sports",
+      "organizerId": "org_city_run_club",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 3,
+        "at": "07:00"
+      },
+      "ends": {
+        "inDays": 3,
+        "at": "09:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 200,
+          "remaining": 76
+        }
+      ],
+      "venue": {
+        "name": "Tower Bridge North",
+        "address": "Tower Bridge Road",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_jazz_vaults",
+      "title": "Late Jazz at the Vaults",
+      "description": "Three sets of modern jazz in a candlelit cellar. Doors at 19:30.",
+      "category": "music",
+      "organizerId": "org_soundwaves",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 5,
+        "at": "20:00"
+      },
+      "ends": {
+        "inDays": 5,
+        "at": "23:30"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 1800,
+          "currency": "GBP",
+          "capacity": 150,
+          "remaining": 40
+        },
+        {
+          "type": "vip",
+          "priceMinor": 4500,
+          "currency": "GBP",
+          "capacity": 20,
+          "remaining": 6
+        }
+      ],
+      "venue": {
+        "name": "The Vaults",
+        "address": "Leake Street",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_hyde_park_cleanup",
+      "title": "Hyde Park Litter Pick",
+      "description": "Two hours making the park a little better. Gloves and bags provided.",
+      "category": "community",
+      "organizerId": "org_city_run_club",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 4,
+        "at": "10:00"
+      },
+      "ends": {
+        "inDays": 4,
+        "at": "12:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 80,
+          "remaining": 33
+        }
+      ],
+      "venue": {
+        "name": "Hyde Park Corner",
+        "address": "Hyde Park",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_accessibility_talk",
+      "title": "Accessibility in Practice",
+      "description": "Real stories of making apps work for everyone: screen readers, large text and contrast.",
+      "category": "design",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": -6,
+        "at": "18:00"
+      },
+      "ends": {
+        "inDays": -6,
+        "at": "20:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 80,
+          "remaining": 12
+        }
+      ],
+      "venue": {
+        "name": "Code Hub",
+        "address": "1 Finsbury Avenue",
+        "city": "London"
+      }
+    },
+    {
+      "id": "ev_design_conf",
+      "title": "Form & Function: Berlin Design Conference",
+      "description": "Two days of talks and workshops on product design, type, colour, motion and accessibility, in three rooms.",
+      "category": "design",
+      "organizerId": "org_berlin_design",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 12,
+        "at": "09:00"
+      },
+      "ends": {
+        "inDays": 13,
+        "at": "18:00"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 12000,
+          "currency": "EUR",
+          "capacity": 300,
+          "remaining": 85
+        },
+        {
+          "type": "vip",
+          "priceMinor": 29000,
+          "currency": "EUR",
+          "capacity": 40,
+          "remaining": 9
+        },
+        {
+          "type": "workshop",
+          "priceMinor": 6000,
+          "currency": "EUR",
+          "capacity": 25,
+          "remaining": 3
+        }
+      ],
+      "venue": {
+        "name": "Kühlhaus Berlin",
+        "address": "Luckenwalder Straße 3",
+        "city": "Berlin"
+      },
+      "sessions": [
+        {
+          "id": "ses_conf_opening",
+          "title": "Opening",
+          "speaker": "Lena Vogel",
+          "room": "Main Hall",
+          "day": 0,
+          "from": "09:00",
+          "to": "09:30"
+        },
+        {
+          "id": "ses_conf_trust",
+          "title": "Designing for Trust",
+          "speaker": "Amara Okafor",
+          "room": "Main Hall",
+          "day": 0,
+          "from": "09:30",
+          "to": "10:30"
+        },
+        {
+          "id": "ses_conf_type",
+          "title": "Type at Scale",
+          "speaker": "Jonas Richter",
+          "room": "Studio",
+          "day": 0,
+          "from": "10:00",
+          "to": "11:00"
+        },
+        {
+          "id": "ses_conf_prototyping",
+          "title": "Prototyping Workshop",
+          "speaker": "Mei Tanaka",
+          "room": "Workshop Room",
+          "day": 0,
+          "from": "11:00",
+          "to": "12:30"
+        },
+        {
+          "id": "ses_conf_colour",
+          "title": "Colour Systems That Last",
+          "speaker": "Sofia Marín",
+          "room": "Main Hall",
+          "day": 0,
+          "from": "13:30",
+          "to": "14:30"
+        },
+        {
+          "id": "ses_conf_motion",
+          "title": "Motion with Meaning",
+          "speaker": "Tom Becker",
+          "room": "Studio",
+          "day": 0,
+          "from": "14:00",
+          "to": "15:00"
+        },
+        {
+          "id": "ses_conf_panel",
+          "title": "Panel: Design Leadership",
+          "speaker": "Lena Vogel and guests",
+          "room": "Main Hall",
+          "day": 0,
+          "from": "15:30",
+          "to": "16:30"
+        },
+        {
+          "id": "ses_conf_research",
+          "title": "Research on a Budget",
+          "speaker": "Priya Nair",
+          "room": "Main Hall",
+          "day": 1,
+          "from": "09:30",
+          "to": "10:30"
+        },
+        {
+          "id": "ses_conf_accessible",
+          "title": "Accessible Interfaces",
+          "speaker": "Daniel Kim",
+          "room": "Studio",
+          "day": 1,
+          "from": "10:00",
+          "to": "11:30"
+        },
+        {
+          "id": "ses_conf_tokens",
+          "title": "Design Tokens in Practice",
+          "speaker": "Elif Yılmaz",
+          "room": "Main Hall",
+          "day": 1,
+          "from": "11:00",
+          "to": "12:00"
+        },
+        {
+          "id": "ses_conf_figma_flutter",
+          "title": "From Figma to Flutter",
+          "speaker": "Ana Costa",
+          "room": "Workshop Room",
+          "day": 1,
+          "from": "13:00",
+          "to": "15:00"
+        },
+        {
+          "id": "ses_conf_closing",
+          "title": "Closing Keynote",
+          "speaker": "Lena Vogel",
+          "room": "Main Hall",
+          "day": 1,
+          "from": "16:30",
+          "to": "17:30"
+        }
+      ]
+    },
+    {
+      "id": "ev_typography_walk",
+      "title": "Typography Walk: Kreuzberg",
+      "description": "A guided walk through Kreuzberg's signs, shopfronts and lettering.",
+      "category": "design",
+      "organizerId": "org_berlin_design",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 4,
+        "at": "14:00"
+      },
+      "ends": {
+        "inDays": 4,
+        "at": "16:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "EUR",
+          "capacity": 25,
+          "remaining": 5
+        }
+      ],
+      "venue": {
+        "name": "Oranienplatz",
+        "address": "Oranienplatz",
+        "city": "Berlin"
+      }
+    },
+    {
+      "id": "ev_sound_garden",
+      "title": "Open Air Sound Garden",
+      "description": "An afternoon and evening of electronic music in the garden. Food trucks on site.",
+      "category": "music",
+      "organizerId": "org_soundwaves",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 11,
+        "at": "16:00"
+      },
+      "ends": {
+        "inDays": 11,
+        "at": "23:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 3500,
+          "currency": "EUR",
+          "capacity": 800,
+          "remaining": 210
+        }
+      ],
+      "venue": {
+        "name": "Holzmarkt",
+        "address": "Holzmarktstraße 25",
+        "city": "Berlin"
+      }
+    },
+    {
+      "id": "ev_yoga_park",
+      "title": "Mindful Mornings: Yoga in the Park",
+      "description": "Gentle yoga for every level. Bring a mat if you have one.",
+      "category": "health",
+      "organizerId": "org_city_run_club",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 2,
+        "at": "08:00"
+      },
+      "ends": {
+        "inDays": 2,
+        "at": "09:30"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "EUR",
+          "capacity": 60,
+          "remaining": 22
+        }
+      ],
+      "venue": {
+        "name": "Tempelhofer Feld",
+        "address": "Columbiadamm",
+        "city": "Berlin"
+      }
+    },
+    {
+      "id": "ev_kids_coding",
+      "title": "Kids Coding Saturday",
+      "description": "Children aged 8–12 build their first game, with volunteers at every table.",
+      "category": "education",
+      "organizerId": "org_berlin_design",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 9,
+        "at": "10:00"
+      },
+      "ends": {
+        "inDays": 9,
+        "at": "13:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "EUR",
+          "capacity": 30,
+          "remaining": 9
+        }
+      ],
+      "venue": {
+        "name": "Stadtbibliothek Mitte",
+        "address": "Brunnenstraße 181",
+        "city": "Berlin"
+      }
+    },
+    {
+      "id": "ev_design_critique",
+      "title": "Product Design Critique Night",
+      "description": "Bring your work, get honest feedback from peers.",
+      "category": "design",
+      "organizerId": "org_berlin_design",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": -13,
+        "at": "19:00"
+      },
+      "ends": {
+        "inDays": -13,
+        "at": "21:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "EUR",
+          "capacity": 40,
+          "remaining": 0
+        }
+      ],
+      "venue": {
+        "name": "Kühlhaus Berlin",
+        "address": "Luckenwalder Straße 3",
+        "city": "Berlin"
+      }
+    },
+    {
+      "id": "ev_ai_summit",
+      "title": "AI in Production Summit",
+      "description": "A day on shipping AI features that last: evaluations, costs, privacy and teams.",
+      "category": "technology",
+      "organizerId": "org_nyc_tech",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": 20,
+        "at": "09:00"
+      },
+      "ends": {
+        "inDays": 20,
+        "at": "17:30"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 19900,
+          "currency": "USD",
+          "capacity": 500,
+          "remaining": 120
+        },
+        {
+          "type": "vip",
+          "priceMinor": 49900,
+          "currency": "USD",
+          "capacity": 50,
+          "remaining": 12
+        }
+      ],
+      "venue": {
+        "name": "Javits Center",
+        "address": "429 11th Avenue",
+        "city": "New York"
+      },
+      "sessions": [
+        {
+          "id": "ses_ai_keynote",
+          "title": "Keynote: Shipping Models Safely",
+          "speaker": "Grace Liu",
+          "room": "Ballroom",
+          "day": 0,
+          "from": "09:00",
+          "to": "10:00"
+        },
+        {
+          "id": "ses_ai_evals",
+          "title": "Evaluations That Catch Regressions",
+          "speaker": "Marcus Hale",
+          "room": "Ballroom",
+          "day": 0,
+          "from": "10:30",
+          "to": "11:30"
+        },
+        {
+          "id": "ses_ai_costs",
+          "title": "Keeping Inference Costs Down",
+          "speaker": "Nadia Rahman",
+          "room": "Room B",
+          "day": 0,
+          "from": "10:30",
+          "to": "11:30"
+        },
+        {
+          "id": "ses_ai_privacy",
+          "title": "Privacy by Design for AI Products",
+          "speaker": "Owen Price",
+          "room": "Ballroom",
+          "day": 0,
+          "from": "13:00",
+          "to": "14:00"
+        },
+        {
+          "id": "ses_ai_panel",
+          "title": "Panel: AI Teams in 2027",
+          "speaker": "Grace Liu and guests",
+          "room": "Ballroom",
+          "day": 0,
+          "from": "16:00",
+          "to": "17:30"
+        }
+      ]
+    },
+    {
+      "id": "ev_founders_breakfast",
+      "title": "Founders' Breakfast",
+      "description": "Coffee, bagels and an honest conversation about fundraising in 2026.",
+      "category": "business",
+      "organizerId": "org_nyc_tech",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": 1,
+        "at": "08:00"
+      },
+      "ends": {
+        "inDays": 1,
+        "at": "10:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 2500,
+          "currency": "USD",
+          "capacity": 40,
+          "remaining": 8
+        }
+      ],
+      "venue": {
+        "name": "The Wing Soho",
+        "address": "52 Mercer Street",
+        "city": "New York"
+      }
+    },
+    {
+      "id": "ev_midnight_jam",
+      "title": "Midnight Code Jam",
+      "description": "Build something small before sunrise. Snacks and good music provided.",
+      "category": "technology",
+      "organizerId": "org_nyc_tech",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": 0,
+        "at": "23:30"
+      },
+      "ends": {
+        "inDays": 1,
+        "at": "03:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "USD",
+          "capacity": 50,
+          "remaining": 18
+        }
+      ],
+      "venue": {
+        "name": "Recurse Space",
+        "address": "397 Bridge Street",
+        "city": "New York"
+      }
+    },
+    {
+      "id": "ev_hoops_tournament",
+      "title": "Community Hoops Tournament",
+      "description": "Three-on-three basketball, all levels. Sign up as a team or on your own.",
+      "category": "sports",
+      "organizerId": "org_city_run_club",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": 6,
+        "at": "11:00"
+      },
+      "ends": {
+        "inDays": 6,
+        "at": "17:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "USD",
+          "capacity": 64,
+          "remaining": 30
+        }
+      ],
+      "venue": {
+        "name": "West 4th Street Courts",
+        "address": "Sixth Avenue",
+        "city": "New York"
+      }
+    },
+    {
+      "id": "ev_pitch_night",
+      "title": "Startup Pitch Night",
+      "description": "Ten startups, five minutes each, one friendly jury.",
+      "category": "business",
+      "organizerId": "org_nyc_tech",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": -3,
+        "at": "18:30"
+      },
+      "ends": {
+        "inDays": -3,
+        "at": "21:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 1000,
+          "currency": "USD",
+          "capacity": 150,
+          "remaining": 0
+        }
+      ],
+      "venue": {
+        "name": "Civic Hall",
+        "address": "124 East 14th Street",
+        "city": "New York"
+      }
+    },
+    {
+      "id": "ev_lahore_startup_weekend",
+      "title": "Lahore Startup Weekend",
+      "description": "Pitch an idea on Friday, build it with a team, demo it on Sunday.",
+      "category": "business",
+      "organizerId": "org_lahore_startups",
+      "timeZone": "Asia/Karachi",
+      "starts": {
+        "inDays": 8,
+        "at": "10:00"
+      },
+      "ends": {
+        "inDays": 10,
+        "at": "18:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 300000,
+          "currency": "PKR",
+          "capacity": 150,
+          "remaining": 47
+        }
+      ],
+      "venue": {
+        "name": "National Incubation Center",
+        "address": "LUMS, DHA",
+        "city": "Lahore"
+      },
+      "sessions": [
+        {
+          "id": "ses_lsw_kickoff",
+          "title": "Kick-off and Team Forming",
+          "speaker": "Hamza Siddiqui",
+          "room": "Main Hall",
+          "day": 0,
+          "from": "10:00",
+          "to": "12:00"
+        },
+        {
+          "id": "ses_lsw_mentors",
+          "title": "Mentor Office Hours",
+          "speaker": "The mentors",
+          "room": "Rooms 1–4",
+          "day": 1,
+          "from": "11:00",
+          "to": "15:00"
+        },
+        {
+          "id": "ses_lsw_pitching",
+          "title": "How to Pitch in Five Minutes",
+          "speaker": "Ayesha Malik",
+          "room": "Main Hall",
+          "day": 1,
+          "from": "16:00",
+          "to": "17:00"
+        },
+        {
+          "id": "ses_lsw_demo",
+          "title": "Demo Day",
+          "speaker": "All teams",
+          "room": "Main Hall",
+          "day": 2,
+          "from": "14:00",
+          "to": "18:00"
+        }
+      ]
+    },
+    {
+      "id": "ev_flutter_lahore",
+      "title": "Flutter Lahore Meetup",
+      "description": "Talks on Flutter architecture and testing, then chai and networking.",
+      "category": "technology",
+      "organizerId": "org_lahore_startups",
+      "timeZone": "Asia/Karachi",
+      "starts": {
+        "inDays": 15,
+        "at": "17:00"
+      },
+      "ends": {
+        "inDays": 15,
+        "at": "20:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "PKR",
+          "capacity": 100,
+          "remaining": 37
+        }
+      ],
+      "venue": {
+        "name": "Arfa Software Technology Park",
+        "address": "Ferozepur Road",
+        "city": "Lahore"
+      }
+    },
+    {
+      "id": "ev_qawwali_evening",
+      "title": "Qawwali Evening at Alhamra",
+      "description": "An evening of qawwali under the stars, with a full ensemble.",
+      "category": "music",
+      "organizerId": "org_soundwaves",
+      "timeZone": "Asia/Karachi",
+      "starts": {
+        "inDays": 7,
+        "at": "19:30"
+      },
+      "ends": {
+        "inDays": 7,
+        "at": "22:30"
+      },
+      "featured": true,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 150000,
+          "currency": "PKR",
+          "capacity": 400,
+          "remaining": 155
+        },
+        {
+          "type": "vip",
+          "priceMinor": 500000,
+          "currency": "PKR",
+          "capacity": 50,
+          "remaining": 11
+        }
+      ],
+      "venue": {
+        "name": "Alhamra Open Air Theatre",
+        "address": "The Mall",
+        "city": "Lahore"
+      }
+    },
+    {
+      "id": "ev_teaching_ai",
+      "title": "Teaching with AI: Educators' Day",
+      "description": "Workshops for teachers on using AI in the classroom, fairly and well.",
+      "category": "education",
+      "organizerId": "org_lahore_startups",
+      "timeZone": "Asia/Karachi",
+      "starts": {
+        "inDays": 18,
+        "at": "09:00"
+      },
+      "ends": {
+        "inDays": 18,
+        "at": "15:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 200000,
+          "currency": "PKR",
+          "capacity": 80,
+          "remaining": 52
+        }
+      ],
+      "venue": {
+        "name": "Punjab University Senate Hall",
+        "address": "Quaid-e-Azam Campus",
+        "city": "Lahore"
+      }
+    },
+    {
+      "id": "ev_dart_patterns_live",
+      "title": "Dart 3 Patterns Live Coding",
+      "description": "An hour of live coding with records, patterns and sealed classes. Ask questions in the chat.",
+      "category": "technology",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 1,
+        "at": "19:00"
+      },
+      "ends": {
+        "inDays": 1,
+        "at": "20:30"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 1000,
+          "remaining": 412
+        }
+      ],
+      "joinUrl": "https://meet.example.com/dart3-patterns"
+    },
+    {
+      "id": "ev_freelancer_finances",
+      "title": "Freelancer Finances 101",
+      "description": "Taxes, invoices and saving for quiet months, explained in plain words.",
+      "category": "education",
+      "organizerId": "org_nyc_tech",
+      "timeZone": "America/New_York",
+      "starts": {
+        "inDays": 10,
+        "at": "12:00"
+      },
+      "ends": {
+        "inDays": 10,
+        "at": "13:30"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "standard",
+          "priceMinor": 1500,
+          "currency": "USD",
+          "capacity": 300,
+          "remaining": 140
+        }
+      ],
+      "joinUrl": "https://meet.example.com/freelancer-finances"
+    },
+    {
+      "id": "ev_burnout_proof",
+      "title": "The Burnout-Proof Developer",
+      "description": "Habits and boundaries for a long, healthy career in tech.",
+      "category": "health",
+      "organizerId": "org_berlin_design",
+      "timeZone": "Europe/Berlin",
+      "starts": {
+        "inDays": 16,
+        "at": "18:00"
+      },
+      "ends": {
+        "inDays": 16,
+        "at": "19:00"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "EUR",
+          "capacity": 500,
+          "remaining": 320
+        }
+      ],
+      "joinUrl": "https://meet.example.com/burnout-proof"
+    },
+    {
+      "id": "ev_maintainers_circle",
+      "title": "Open Source Maintainers' Circle",
+      "description": "Maintainers share what works: triage, funding and saying no kindly.",
+      "category": "community",
+      "organizerId": "org_flutter_london",
+      "timeZone": "Europe/London",
+      "starts": {
+        "inDays": 25,
+        "at": "17:00"
+      },
+      "ends": {
+        "inDays": 25,
+        "at": "18:30"
+      },
+      "featured": false,
+      "offers": [
+        {
+          "type": "free",
+          "priceMinor": 0,
+          "currency": "GBP",
+          "capacity": 200,
+          "remaining": 90
+        }
+      ],
+      "joinUrl": "https://meet.example.com/maintainers-circle"
+    }
+  ]
+}

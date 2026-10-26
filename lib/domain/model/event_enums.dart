@@ -41,6 +41,6 @@ enum EventStatus {
   cancelled,
 }
 
-/// What a sync noticed about an event you hold a ticket for (Phase 7's
-/// alerts).
+/// What a sync noticed about an event you hold a ticket for, for its
+/// alert.
 enum EventChangeKind { moved, cancelled }

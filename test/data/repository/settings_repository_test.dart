@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/types.dart';
 
 void main() {
   /// The device's store, as one isolate sees it: its own cache over the
@@ -74,7 +75,7 @@ void main() {
   test('only what changed is written: a stale copy never undoes another '
       "isolate's save", () async {
     final app = await repository();
-    // Meanwhile, the background isolate (Phase 7) saves the city.
+    // Meanwhile, the background isolate saves the city.
     await (await preferences()).setString('settings.preferredCity', 'London');
 
     await app.update((s) => s.copyWith(onboarded: true));
@@ -138,6 +139,44 @@ void main() {
     await pumpEventQueue();
 
     expect(seen, const [AppSettings()]);
+  });
+
+  // Found on the Android emulator: the system's permission dialog pauses
+  // the app, and closing it resumes the app, which reloads the settings
+  // while the switch's own write is still on its way to the disk. Android's
+  // store (DataStore) doesn't keep the two in order: the read can overtake
+  // the write.
+  group('a reload racing a write', () {
+    test('waits for its own writes: the read never overtakes them', () async {
+      SharedPreferencesAsyncPlatform.instance = _SlowWrites();
+      final app = await repository();
+
+      final writing = app.update((s) => s.copyWith(notificationsEnabled: true));
+      await app.reload();
+      await writing;
+
+      expect(app.current.notificationsEnabled, isTrue);
+    });
+
+    test(
+      'a change made while the disk is read wins over what was read',
+      () async {
+        SharedPreferencesAsyncPlatform.instance = _SlowReads({
+          'settings.notificationsEnabled': false,
+        });
+        final app = await repository();
+
+        final reading = app.reload();
+        // The read is under way (it answers after 20 ms) when the change
+        // is made.
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        await app.update((s) => s.copyWith(notificationsEnabled: true));
+        await reading;
+
+        expect(app.current.notificationsEnabled, isTrue);
+        expect((await repository()).current.notificationsEnabled, isTrue);
+      },
+    );
   });
 
   group('notifications', () {
@@ -208,4 +247,36 @@ void main() {
       expect(seen, hasLength(published));
     });
   });
+}
+
+/// A device store whose writes land a moment after they're made, while
+/// reads return what has landed: a read can overtake a write.
+final class _SlowWrites extends InMemorySharedPreferencesAsync {
+  _SlowWrites() : super.empty();
+
+  @override
+  Future<bool> setBool(
+    String key,
+    bool value,
+    SharedPreferencesOptions options,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return super.setBool(key, value, options);
+  }
+}
+
+/// A device store whose reads take a snapshot when asked and answer a
+/// moment later.
+final class _SlowReads extends InMemorySharedPreferencesAsync {
+  _SlowReads(super.data) : super.withData();
+
+  @override
+  Future<Map<String, Object>> getPreferences(
+    GetPreferencesParameters parameters,
+    SharedPreferencesOptions options,
+  ) async {
+    final snapshot = await super.getPreferences(parameters, options);
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return snapshot;
+  }
 }

@@ -7,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 /// Screens style themselves through `Theme.of(context)`, never with hard-coded
 /// colors. The default scheme comes from one seed (an indigo-violet);
 /// [fromScheme] takes any scheme, so the wallpaper-based "dynamic color" of
-/// Android 12+ can replace it in Phase 6 without touching a screen.
+/// Android 12+ replaces it without touching a screen.
 abstract final class AppTheme {
   static const Color seedColor = Color(0xFF5B4FE9);
 

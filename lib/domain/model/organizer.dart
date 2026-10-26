@@ -2,8 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'organizer.freezed.dart';
 
-/// Who runs events. Whether *you* follow them is the user's own data
-/// (Phase 6), joined in.
+/// Who runs events. Whether *you* follow them is the user's own data,
+/// joined in.
 @freezed
 abstract class Organizer with _$Organizer {
   const factory Organizer({

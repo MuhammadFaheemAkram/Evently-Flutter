@@ -163,8 +163,8 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
 // Declared at the top level, so they live in the *root* Navigator: pushing
 // one covers the tab bar, and Back (or the iOS swipe) returns to the tab it
 // came from with its state intact. An event opens from Discover, Search,
-// Saved, a ticket, an organizer and (later) a notification, so one route
-// beats a copy per tab.
+// Saved, a ticket, an organizer and a notification, so one route beats a
+// copy per tab.
 
 /// `/events/:eventId`: an event, with its RSVP flow and agenda as children,
 /// so a link to either opens with the event underneath and Close returns to

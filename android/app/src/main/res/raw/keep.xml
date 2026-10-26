@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The notification icon is named only from Dart: keep it when a release
+     build shrinks unused resources. Without it, the plugin can't
+     initialize in a release build (conventions §11.85). -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />

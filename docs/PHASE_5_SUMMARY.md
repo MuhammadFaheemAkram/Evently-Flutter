@@ -177,6 +177,13 @@ Agenda ─▶ ScheduleRepository.watchAgenda: events ⟕ sessions ⟕ session_bo
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/features/{rsvp,tickets,ticket_detail,agenda}/cubit/`; `daos/{tickets_dao,session_bookmarks_dao}.dart`; `dto/booking_dto.dart`; the ticket and agenda widgets.
+- **Tests:** `test/features/{rsvp,tickets,ticket_detail,agenda}/`, `test/app/booking_flows_test.dart`, `test/core/network/fake_server_test.dart`.
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

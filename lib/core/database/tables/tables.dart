@@ -13,7 +13,7 @@ import 'package:evently/domain/model/event_enums.dart';
 // - **The catalog** (organizers, events, ticket offers, sessions): what the
 //   server serves, cached. Only a sync writes it (and a booking the server
 //   confirmed updates its event's counts). Never deleted by a sync: an event
-//   gone from the server is marked cancelled instead (Phase 7).
+//   gone from the server is marked cancelled instead.
 // - **The user's** (saved events, tickets, bookmarks, follows, reminders,
 //   recent searches, the profile, change alerts): what *you* did. Only your
 //   actions write it.
@@ -21,7 +21,7 @@ import 'package:evently/domain/model/event_enums.dart';
 // User rows point at catalog rows **without** `CASCADE`: a foreign key's
 // default (`NO ACTION`) refuses to delete an event someone saved or holds a
 // ticket for, so nothing the user owns can disappear with the cache (Clear
-// cache deletes only what nothing points at, Phase 6).
+// cache deletes only what nothing points at).
 //
 // Instants are UTC ISO-8601 text (conventions §11.14): every `*_at` column
 // must end in `Z` (a `NULL` passes), so the text sorts and compares in time
@@ -247,7 +247,8 @@ class FollowedOrganizers extends Table {
   List<String> get customConstraints => [_utc('followed_at')];
 }
 
-/// The reminder toggle on an event's page (Phase 7).
+/// The reminder toggle on an event's page: the user's choice, either way
+/// (no row: the default, on when going).
 @DataClassName('EventReminderRow')
 class EventReminders extends Table {
   TextColumn get eventId => text().references(Events, #id)();
@@ -259,7 +260,7 @@ class EventReminders extends Table {
 }
 
 /// A change a sync noticed on an event you hold a ticket for, recorded once
-/// and alerted once (Phase 7).
+/// and alerted once (`seen`: claimed for its alert).
 @DataClassName('EventChangeRow')
 class EventChanges extends Table {
   IntColumn get id => integer().autoIncrement()();

@@ -49,11 +49,11 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 | 5 | RSVP, tickets and the agenda | ✅ Done |
 | 6 | Organizers, profile and settings | ✅ Done |
 | 7 | Notifications and background sync | ✅ Done |
-| 8 | Open-source polish and final docs | ⏳ Next |
+| 8 | Documentation, CI, a final mutation pass | ✅ Done |
 
 ---
 
-## ✨ Features (the plan)
+## ✨ Features
 
 - 🚀 **First launch:** pick your city, then explore with demo data or start fresh
 - 🧭 **Discover:** featured events, events in your city, what's coming up by day, categories, pull to refresh, save and RSVP from a card
@@ -66,6 +66,20 @@ Evently is built in **strict, reviewable phases**. Each phase ends with:
 - 👤 **Profile and settings:** edit your profile; appearance, dynamic color (Android 12+), notifications, your city, clear cache, reset demo data, developer tools
 - 🔔 **Reminders:** before events you're going to, a confirmation when you book, a daily summary, and an alert when an event moves or is cancelled
 - ♿ **Accessible:** dark mode and large text on every screen, labelled controls, never color alone, checked by a test tour that grows with the app
+
+---
+
+## 📸 Screenshots
+
+| Discover | An event, in another zone | A ticket | Search with filters |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/discover-light.png" width="200" alt="Discover: a Featured carousel with Flutter London: State of Flutter, Mon 26 Oct, 6:30 PM GMT, Going; then In London"> | <img src="docs/screenshots/event-light.png" width="200" alt="Form &amp; Function in Berlin: Sat 7 Nov, 9:00 AM to Sun 8 Nov, 6:00 PM CET with Your time in PKT below, You're going, View ticket, and Remind me with why it's off"> | <img src="docs/screenshots/ticket-light.png" width="200" alt="A ticket: Confirmed, a QR code on white, the code EVT-7KQ2-M9XH, the time on the venue's clock and the user's"> | <img src="docs/screenshots/search-light.png" width="200" alt="Search with Technology, Next 7 days and Free filters as chips: 3 events"> |
+
+| The agenda's clashes | Tickets after an update (dark) | Change alerts | Android, dynamic color |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/agenda-light.png" width="200" alt="The agenda: two bookmarked sessions, each marked as clashing with the other"> | <img src="docs/screenshots/tickets-dark.png" width="200" alt="Tickets in dark mode: one Cancelled by the organizer, one Moved, each with an icon"> | <img src="docs/screenshots/change-alerts-dark.png" width="200" alt="Two notifications: Dart 3 Patterns Live Coding is cancelled; Form &amp; Function has moved, now Sun 8 Nov at 09:00 CET, was Sat 7 Nov"> | <img src="docs/screenshots/android-dynamic-discover.png" width="200" alt="Discover on Android in the wallpaper's blue"> |
+
+All 24 (light, dark, large text and Android), with what to look for and how to retake them: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md).
 
 ---
 
@@ -153,6 +167,17 @@ FakeEventlyApi (seed rendered from its calendar's anchor, 700 ms) ─▶ checked
 - **The server's data and the user's, apart:** a refresh upserts the catalog in one transaction (`ON CONFLICT DO UPDATE`, never `REPLACE`, never deleting); "saved" and "going" are the user's own rows.
 - **Failures are values:** repositories return a `Result` with an `AppException` (offline, damaged data, unknown); on any failure nothing is written.
 
+**Notifications and background work:**
+
+```
+tickets, saves, reminder toggles, the catalog, settings ──settled──▶ planNotifications (pure) ──▶ diff ──▶ the device
+a refresh ── one transaction: upsert, mark the gone cancelled, diffCatalog, record changes ──▶ alerts, claimed once
+workmanager (≈6 h) ──▶ callbackDispatcher ──▶ BackgroundGraph (its own small graph, the same database) ──▶ refresh → alert → re-plan
+```
+
+- **Planned as data, applied as a diff:** reminders a lead time before events you're going to, a daily summary; stable ids; at most 60; the switch reads "on" only while the system allows notifications. See [NOTIFICATIONS.md](docs/NOTIFICATIONS.md).
+- **A sync that notices changes:** a moved or cancelled event you hold a ticket for is recorded once (inside the refresh's transaction), shows on the ticket, and is alerted once across both isolates. See [BACKGROUND_WORK.md](docs/BACKGROUND_WORK.md).
+
 ---
 
 ## 🗂️ Folder Structure
@@ -160,29 +185,57 @@ FakeEventlyApi (seed rendered from its calendar's anchor, 700 ms) ─▶ checked
 ```
 Evently/
 ├── .fvmrc                          # pinned Flutter version (3.47.6)
-├── .github/workflows/flutter-ci.yml
+├── .github/                        # workflows/flutter-ci.yml, issue and PR templates
 ├── analysis_options.yaml           # lints + strict analyzer modes
 ├── build.yaml                      # drift options, lint-free generated files
-├── assets/json/                    # catalog_seed.json, demo_user.json (the fake API's seed)
+├── assets/json/                    # catalog_seed.json, demo_user.json, catalog_update.json (the fake API's seed)
 ├── drift_schemas/                  # each exported schema version
+├── docs/                           # the guides below, the phase write-ups, screenshots/
 ├── lib/
-│   ├── main.dart                   # binding → time zones → configureDependencies() → runApp
-│   ├── app/                        # EventlyApp: themes and the router
+│   ├── main.dart                   # binding → time zones → configureDependencies() → background work
+│   │                               # → the launch notification's screen → runApp
+│   ├── app/                        # EventlyApp: themes, the router, the notification sync, resume, taps
+│   ├── background/                 # the OS's entry point (workmanager) and its hand-built BackgroundGraph
 │   ├── core/
-│   │   ├── common/                 # Result, AppException, guardWrite, EventClock
-│   │   ├── database/               # tables/, app_database, daos/ (catalog, user data, events, saved), converters
-│   │   ├── design_system/          # theme/, formatting/ (EventFormats), widgets/ (event cards, banner, chips, ZonedTimeText, …), UserTimeZone, large_text
-│   │   ├── navigation/             # app_routes (+ .g.dart), app_router, first_launch_redirect, stream_listenable, fallback Close button
-│   │   ├── network/                # EventlyApi, FakeEventlyApi, SeedRenderer, NetworkSimulator, dto/
-│   │   ├── platform/               # UrlLauncherLinkOpener
+│   │   ├── common/                 # Result, AppException, guardWrite, EventClock, Stream.settled
+│   │   ├── database/               # tables/, app_database (shared across isolates), daos/, converters
+│   │   ├── design_system/          # theme/, formatting/ (EventFormats), widgets/ (event cards, ZonedTimeText,
+│   │   │                           # ReminderToggle, the time picker, …), UserTimeZone, large_text
+│   │   ├── navigation/             # app_routes (+ .g.dart), app_router, first_launch_redirect, stream_listenable, Close fallback
+│   │   ├── network/                # EventlyApi, FakeEventlyApi, SeedRenderer, DemoCalendar, NetworkSimulator, dto/
+│   │   ├── platform/               # LocalNotifications, WorkmanagerBackgroundWork, UrlLauncherLinkOpener,
+│   │   │                           # MaterialYouColorSource, the device's time zone
 │   │   └── storage/                # SettingsLocalDataSource (the preference keys)
 │   ├── data/                       # mapper/, repository/ (+ the API guard)
-│   ├── domain/                     # model/, calculation/ (pure rules), repository/ (contracts), service/, usecase/
+│   ├── domain/                     # model/, calculation/ (pure rules, diffCatalog, planNotifications),
+│   │                               # repository/ (contracts), service/, usecase/
 │   ├── features/                   # welcome, shell (tabs + drawer), discover, search, saved, tickets, profile,
 │   │                               # event_detail, rsvp, agenda, ticket_detail, organizer, following, profile_edit, settings, about
 │   └── di/                         # injection.dart (+ .config.dart), app_module.dart
-└── test/                           # mirrors lib/, plus app/ (flows, the accessibility tour) and helpers/ (the test stack, fixtures, fakes)
+└── test/                           # mirrors lib/, plus app/ (flows, the accessibility tour), background/,
+                                    # and helpers/ (the data stack, fixtures, fakes)
 ```
+
+---
+
+## 🎭 The Demo and the Fake API
+
+There is **no backend, no account and no API key**. `FakeEventlyApi` plays the server behind the same interface a real client would use (fetch the catalog, fetch the demo user, RSVP, cancel), after a 700 ms simulated delay:
+
+- **The seed** (`assets/json/`): 6 organizers and 25 events in London, Berlin, New York and Lahore (4 online), with ticket offers and agendas; a demo user (Sara Ahmed) with 4 saved events, 4 tickets, 3 bookmarked sessions and 2 follows.
+- **Written the way people plan:** "in 3 days at 18:30, in London", rendered to instants with the venue's offset, counting from a **calendar anchor** set at the first fetch, so the demo ages like real data. Reset demo data starts it again from today.
+- **Server state in memory:** places taken, the tickets it issued (one active per event). It checks every booking again: cancelled, started, sold out, already going.
+- **Developer switches** (Settings → Developer): **Simulate network failure**, **Publish a catalog update** (an event you're going to moves, another is cancelled, one is edited, two appear), **Run background sync now**, **Show planned notifications**.
+
+See [API_SIMULATION.md](docs/API_SIMULATION.md).
+
+---
+
+## 💾 Local Persistence
+
+- **drift (SQLite)** holds the cached catalog and the user's data, in separate tables: `CHECK`s for every rule a row must keep, a partial unique index for one active ticket per event, foreign keys on, and no cascade from the user's rows (a saved or booked event can't be deleted). Shared across isolates with the background sync. See [DATA_MODEL.md](docs/DATA_MODEL.md).
+- **`SharedPreferencesWithCache`** holds the settings, read before the first frame, written key by key, reloaded on resume after the app's own writes.
+- **Offline:** every screen reads the cache; saves, bookmarks, follows and reminders work without a network; bookings wait for the server. See [OFFLINE_FIRST.md](docs/OFFLINE_FIRST.md).
 
 ---
 
@@ -215,21 +268,25 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**891 tests** after Phase 7:
-- **Time and models:** `EventTime` in four zones, across both clock changes and midnight, end-exclusive; the user's "today"; upcoming and past at their edges; day grouping across zones (a New York night is tomorrow in London).
-- **Search:** the query for every filter and their combination (escaped `LIKE`, overlap windows, free vs paid, going vs a cancelled ticket); date presets in the user's calendar, across a clock change; recent searches; `SearchBloc` timing in fake time and switching in real time.
-- **Booking:** the server's rules (places, closed events, one booking each, cancel before the start), the booking and cancel transactions, nothing written on failure; ticket codes checked against every single substitution; RSVP validation; agenda days and clashes.
-- **Organizers, profile and settings:** Clear cache keeping everything owned; Reset demo data (and offline, nothing); the published catalog update; follows and next events (never a cancelled one); profile rules and counts; appearance and dynamic color applied app-wide.
-- **Notifications and the background sync:** the planner (lead times, cancelled and past events, the summary's days on both sides of a clock change, the horizon, the cap, stable ids); `diffCatalog` and change detection inside the refresh's transaction, recorded once and claimed once across isolates; plan → diff → apply against a fake device, a revoked permission turning the switch off; the RSVP confirmation and change alerts; the background dispatch; taps on a cold and a warm start.
-- **Rules:** why an event can't be booked (going, cancelled, ended, started, sold out) and which reason wins; Discover's sections; maps links; `https`-only links.
-- **The database:** every `CHECK`, foreign keys, cascades, the user's rows protecting their event, one active ticket per event; the catalog upsert keeping user rows, writing nulls, never deleting, rolling back; saved and going as joins that follow every save and booking.
-- **The fake API and its seed:** relative times rendered with the venue's offset, from a calendar anchor kept on the device (so events don't move a day each day); latency and failures; the bundled seed passing every check as of six instants.
-- **Mappers and repositories:** every catalog and demo rule; success, offline, malformed and broken data, a database failure, each leaving the cache as it was; settings writing only what changed; saving offline.
-- **Formatting and widgets:** day headings, zoned ranges and their spoken form, prices in four currencies; the event card's actions, zone and large-text layout.
-- **Screens:** Welcome, Discover, Event detail, Search (with the filter sheet), Saved, RSVP, Tickets, Ticket detail, the Agenda, Organizer, Following, Profile, Edit profile and Settings: each Cubit on the real data stack, each view in every state; flows on the real DI graph (first launch, Discover → event → Back, saving offline, refreshing offline, RSVP from a card, an event's ticket, agenda and organizer, Directions, a stale link, searching offline, filters alone, Saved with Undo, booking with the ticket replacing the form, booking offline then Try again, cancelling, bookmarking, Dark app-wide, dynamic color, a published update marking tickets, clear cache, following, editing the profile, turning notifications on or being denied, a reminder from an event's page, the RSVP confirmation, a synced update alerted once, notification taps, a permission revoked while away); navigation and the drawer.
-- **The accessibility tour:** Welcome, Discover with the demo, Event detail (going in another zone, online, sold out, over, not found), Search with filters and the filter sheet, Saved, RSVP (with errors, and closed), Tickets, a ticket (upcoming and past), the agenda with clashes, Profile on a fresh start, Following with nobody, Edit profile with errors, Settings with notifications on and denied, the lead time choice, the plan sheet, an event with its reminder on, the drawer and every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast.
+**896 tests**, counted by area in [TESTING.md](docs/TESTING.md):
 
-A hundred and fifty-four mutation checks (the code broken on purpose, one rule at a time) are each caught; see the phase summaries.
+| Area | Tests |
+|---|---:|
+| Screens: Cubits, the Bloc and views | 231 |
+| Mappers and repositories (the cache, bookings, change detection, settings) | 117 |
+| Domain rules and the notification planner | 103 |
+| Design system (themes, WCAG contrast, formatting in four zones, widgets) | 91 |
+| Database (constraints, foreign keys, the upsert, the search query, Clear cache) | 78 |
+| Accessibility tour (every screen and state, light and dark, 200 % text) | 71 |
+| The fake server and the seed | 51 |
+| Domain models (time across zones and clock changes) | 41 |
+| App-level flows on the real DI graph | 35 |
+| Use cases (booking, plan → diff → apply, alerts, the background sync) | 34 |
+| Navigation | 31 |
+| Common, DI, the background dispatch | 13 |
+
+- **Mutation checks:** 175 behaviours were broken on purpose, from "a sync never deletes" to "one active ticket per event" to "a change is alerted once", and each made a test fail.
+- **On devices:** every phase was checked on an iPhone simulator (light, dark, large text); dynamic color, notifications, the background worker and a release build also on an Android 16 emulator.
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -250,12 +307,28 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 | Screen state | ViewModel + StateFlow | `@Observable` | Cubit / Bloc |
 | Cache | Room + DataStore | SwiftData + `@AppStorage` | drift + `SharedPreferencesWithCache` |
 | Fake API | Retrofit-style services | protocols + fakes | `EventlyApi`, in memory, seeded from JSON |
-| DI | Hilt | `AppEnvironment` | `get_it` + `injectable` |
+| Saved / RSVP state | `isSaved`, `isRsvped` on `Event` | the same | joins over the user's tables, so a sync can't lose them |
+| Reminders | WorkManager + NotificationManager | UserNotifications | `flutter_local_notifications`, planned and diffed, plus change alerts |
+| Background | WorkManager | BGTaskScheduler | `workmanager` (both), a background isolate with its own graph |
+| DI | Hilt | `AppEnvironment` | `get_it` + `injectable` (+ the background graph) |
 
 ---
 
 ## 📚 Documentation
 
+**Guides**
+- [Architecture](docs/ARCHITECTURE.md): layers, ownership, state, errors, navigation, DI, key decisions
+- [Data model](docs/DATA_MODEL.md): tables, constraints, joins, transactions, preferences
+- [Offline-first](docs/OFFLINE_FIRST.md): the cache, refresh and sync, server-confirmed writes, what works offline
+- [Time zones](docs/TIME_ZONES.md): instants and zones, which clock each screen shows, worked examples
+- [Notifications](docs/NOTIFICATIONS.md): the planner, the diff, change alerts, permission, taps
+- [Background work](docs/BACKGROUND_WORK.md): workmanager on both platforms, the background graph, the shared database
+- [API simulation](docs/API_SIMULATION.md): the fake server, its seed and calendar, bookings, the catalog update
+- [Testing](docs/TESTING.md): what's covered, how the tests are built, every mutation check
+- [Learning notes](docs/LEARNING_NOTES.md) and [interview notes](docs/INTERVIEW_NOTES.md)
+- [Screenshots](docs/SCREENSHOTS.md) and the [roadmap](docs/ROADMAP.md)
+
+**Phase write-ups** (each with an Android / iOS comparison)
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
 - [Phase 2 — Data layer](docs/PHASE_2_SUMMARY.md)
 - [Phase 3 — Discover and Event detail](docs/PHASE_3_SUMMARY.md)
@@ -263,12 +336,15 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 - [Phase 5 — RSVP, tickets and the agenda](docs/PHASE_5_SUMMARY.md)
 - [Phase 6 — Organizers, profile and settings](docs/PHASE_6_SUMMARY.md)
 - [Phase 7 — Notifications and background sync](docs/PHASE_7_SUMMARY.md)
+- [Phase 8 — Documentation and CI](docs/PHASE_8_SUMMARY.md)
+
+**Contributing:** [CONTRIBUTING](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
 ---
 
 ## 🗺️ Roadmap
 
-The phases above. Ideas after them are collected in `docs/ROADMAP.md` in Phase 8.
+All eight phases are done. Next ideas (exact alarms on Android, a real backend with push, add to calendar, an app icon, …) are in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 

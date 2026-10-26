@@ -23,15 +23,29 @@ abstract interface class DemoCalendar {
 
 /// The anchor in the device's preferences, so the background isolate's
 /// fake server counts from the same day as the app's.
+///
+/// Read once, then kept in memory: a reload of the preferences empties
+/// their cache for a moment (`SharedPreferencesWithCache.reloadCache`), and
+/// a read in that moment would find no anchor and start a new calendar.
 @LazySingleton(as: DemoCalendar)
 class StoredDemoCalendar implements DemoCalendar {
   StoredDemoCalendar(this._local, this._clock);
 
   final SettingsLocalDataSource _local;
   final Clock _clock;
+  DateTime? _anchor;
 
   @override
-  DateTime anchor() {
+  DateTime anchor() => _anchor ??= _storedOrNew();
+
+  @override
+  Future<void> restart() {
+    final now = _clock.now().toUtc();
+    _anchor = now;
+    return _save(now);
+  }
+
+  DateTime _storedOrNew() {
     final stored = DateTime.tryParse(
       _local.getString(SettingsLocalDataSource.demoAnchorKey) ?? '',
     );
@@ -41,9 +55,6 @@ class StoredDemoCalendar implements DemoCalendar {
     unawaited(_save(now));
     return now;
   }
-
-  @override
-  Future<void> restart() => _save(_clock.now().toUtc());
 
   Future<void> _save(DateTime anchor) => _local.setString(
     SettingsLocalDataSource.demoAnchorKey,

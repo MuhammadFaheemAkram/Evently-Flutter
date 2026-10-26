@@ -71,11 +71,12 @@ class AppDatabase extends _$AppDatabase {
             ),
       );
 
-  /// Each phase is treated as a release: a phase that changes the schema
-  /// bumps this, exports the new version (`drift_dev make-migrations`) and
-  /// ships a tested migration.
+  /// A change to the schema bumps this, exports the new version
+  /// (`drift_dev make-migrations`) and ships a tested migration. Each phase
+  /// of the build was treated as a release; none changed the schema after
+  /// the first.
   ///
-  /// 1. Phase 2: every table.
+  /// 1. The first release: every table.
   @override
   int get schemaVersion => 1;
 

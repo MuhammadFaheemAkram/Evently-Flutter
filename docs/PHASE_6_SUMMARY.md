@@ -176,6 +176,13 @@ Edit      ─▶ ProfileRules (form) ─▶ UpdateProfileUseCase (rules again) �
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/features/{organizer,following,profile,profile_edit,settings,about}/` (with their `cubit/`), `daos/{organizers_dao,profile_dao}.dart`, `assets/json/catalog_update.json`, `core/network/fake_developer_tools.dart`, `core/platform/material_you_color_source.dart`.
+- **Tests:** `test/features/{organizer,profile,settings}/`, `test/features/about_test.dart`, `test/app/profile_settings_flows_test.dart`, `test/core/network/catalog_update_test.dart`.
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

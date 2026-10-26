@@ -183,6 +183,13 @@ Tap ─▶ reminder: Event · summary: Tickets · confirmation/change: Ticket   
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/background/` (the entry point and `BackgroundGraph`); `lib/core/platform/{local_notifications,workmanager_background_work,device_time_zone_reader}.dart`; `lib/core/network/demo_calendar.dart`; `daos/reminders_dao.dart`; `lib/features/settings/widgets/`; `android/app/src/main/res/drawable/ic_notification.xml`.
+- **Tests:** `test/background/`, `test/app/notification_flows_test.dart`, `test/data/repository/catalog_changes_test.dart`, `test/domain/calculation/{notification_plan,catalog_diff}_test.dart`, `test/domain/usecase/notification_use_cases_test.dart`.
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

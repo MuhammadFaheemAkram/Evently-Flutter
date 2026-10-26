@@ -14,9 +14,11 @@ void main() {
         InMemorySharedPreferencesAsync.empty(),
   );
 
+  late SharedPreferencesWithCache preferences;
+
   /// One isolate's view of the device's preferences, at [now].
   Future<StoredDemoCalendar> calendar(DateTime now) async {
-    final preferences = await SharedPreferencesWithCache.create(
+    preferences = await SharedPreferencesWithCache.create(
       cacheOptions: const SharedPreferencesWithCacheOptions(
         allowList: SettingsLocalDataSource.allowList,
       ),
@@ -56,5 +58,22 @@ void main() {
 
     expect(later.anchor(), dayLater);
     expect((await calendar(dayLater)).anchor(), dayLater);
+  });
+
+  test('read once: a moment with no stored anchor (a reload emptying the '
+      'cache) never starts a new calendar', () async {
+    await calendar(demoNow);
+    var now = demoNow;
+    final app = StoredDemoCalendar(
+      SettingsLocalDataSource(preferences),
+      Clock(() => now),
+    );
+    expect(app.anchor(), demoNow);
+    await pumpEventQueue();
+
+    await preferences.remove(SettingsLocalDataSource.demoAnchorKey);
+    now = dayLater;
+
+    expect(app.anchor(), demoNow);
   });
 }

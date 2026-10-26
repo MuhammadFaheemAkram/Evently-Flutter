@@ -6,7 +6,7 @@ part 'ticket.freezed.dart';
 /// Your place at an event. A ticket *is* the RSVP: there's no separate
 /// "going" flag to keep in step with it.
 ///
-/// Only the server issues one (Phase 5): the app writes a ticket only from
+/// Only the server issues one: the app writes a ticket only from
 /// the server's answer, so there is never a ticket the server doesn't know.
 @freezed
 abstract class Ticket with _$Ticket {

@@ -26,6 +26,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   final _changes = StreamController<AppSettings>.broadcast(sync: true);
   AppSettings _current;
 
+  /// This isolate's writes still on their way to the disk.
+  Future<void> _writing = Future.value();
+
+  /// How many changes this isolate has made: a reload that saw one happen
+  /// while it read keeps it.
+  var _changeCount = 0;
+
   @override
   AppSettings get current => _current;
 
@@ -46,8 +53,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final before = _current;
     final after = change(before);
     if (after == before) return;
+    _changeCount++;
     _current = after;
     _changes.add(after);
+    final write = _write(before, after);
+    _writing = Future.wait([_writing, write.catchError((Object _) {})]);
+    await write;
+  }
+
+  Future<void> _write(AppSettings before, AppSettings after) async {
     if (before.onboarded != after.onboarded) {
       await _local.setBool(_Keys.onboardedKey, value: after.onboarded);
     }
@@ -83,9 +97,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
   }
 
+  /// Android's store (DataStore) doesn't keep a read behind a write made
+  /// just before it, and the reload on resume can come right after a change
+  /// (the system's permission dialog resumes the app as it closes). So the
+  /// read waits for this isolate's own writes, and what it read is dropped
+  /// if a change was made meanwhile: that change is newer (conventions
+  /// §11.84).
   @override
   Future<void> reload() async {
+    await _writing;
+    final changes = _changeCount;
     await _local.reload();
+    if (changes != _changeCount) return;
     final settings = _read(_local);
     if (settings == _current) return;
     _current = settings;

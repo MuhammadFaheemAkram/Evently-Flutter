@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:evently/app/evently_app.dart';
 import 'package:evently/di/injection.dart';
+import 'package:evently/domain/model/planned_notification.dart';
 import 'package:evently/domain/service/background_work.dart';
 import 'package:evently/domain/service/notification_scheduler.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,8 +18,24 @@ Future<void> main() async {
   unawaited(_registerBackgroundWork());
   // A notification's tap that launched the app opens straight on its
   // screen.
-  final launch = await getIt<NotificationInteractions>().launchTarget();
+  final launch = await _launchTarget();
   runApp(EventlyApp(initialLocation: EventlyApp.locationFor(launch)));
+}
+
+/// The notification tap that launched the app, if any. Best effort: the
+/// app starts whatever the notification plugin says (a release build once
+/// stopped here, on a missing icon, conventions §11.85).
+Future<NotificationTarget?> _launchTarget() async {
+  try {
+    return await getIt<NotificationInteractions>().launchTarget();
+  } on Object catch (error, stackTrace) {
+    log(
+      'Reading the launch notification failed',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return null;
+  }
 }
 
 Future<void> _registerBackgroundWork() async {

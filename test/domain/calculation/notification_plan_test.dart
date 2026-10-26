@@ -222,6 +222,16 @@ void main() {
       expect(summary.id, notificationId(NotificationKind.summary, '20261024'));
     });
 
+    test('after the clocks go back, 08:00 is 08:00 UTC', () {
+      // Monday 26 October, 18:30 in London: GMT now.
+      final monday = at(DateTime.utc(2026, 10, 26, 18, 30));
+
+      final summary = summaries(plan([card(monday, isGoing: true)])).single;
+
+      expect(summary.at, DateTime.utc(2026, 10, 26, 8));
+      expect(summary.body, 'An event at 18:30');
+    });
+
     test('several events: the first, and how many more', () {
       final morning = at(DateTime.utc(2026, 10, 24, 9), title: 'Morning');
       final evening = event(id: 'ev_2', title: 'Evening');

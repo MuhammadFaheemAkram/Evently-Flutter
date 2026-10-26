@@ -23,8 +23,8 @@ enum RsvpBlock {
 /// nothing does. The first reason that applies wins, most decisive first.
 ///
 /// A moved event can still be booked (at its new time). Whether a *chosen*
-/// offer has places left is the RSVP form's check (Phase 5); here it's
-/// enough that some offer has.
+/// offer has places left is the RSVP form's check (`validateRsvp`); here
+/// it's enough that some offer has.
 RsvpBlock? rsvpBlock(
   Event event, {
   required bool isGoing,

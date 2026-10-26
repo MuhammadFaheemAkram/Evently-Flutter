@@ -12,7 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 // The catalog's three shapes, and the ways between them:
 // - DTO → domain: checked first, so damaged data never reaches the cache;
 // - domain → rows: what a refresh writes;
-// - rows → domain: what the screens read (from Phase 3).
+// - rows → domain: what the screens read.
 
 extension CatalogDtoToDomain on CatalogDto {
   /// The catalog, after checking every rule a type can't express. Throws a

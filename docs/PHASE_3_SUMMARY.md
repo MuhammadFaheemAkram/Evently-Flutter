@@ -184,6 +184,13 @@ EventDetailPage ─▶ EventDetailCubit.load(id)
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/core/common/event_clock.dart`, `lib/core/design_system/{formatting,widgets}/` filled out, `lib/core/platform/`, `lib/domain/calculation/`, `lib/domain/service/`, `lib/features/{discover,event_detail}/cubit/`.
+- **Tests:** `test/app/discover_flows_test.dart`, `test/domain/calculation/`, `test/features/{discover,event_detail}/`.
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

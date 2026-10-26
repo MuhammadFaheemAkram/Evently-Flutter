@@ -15,7 +15,7 @@ sealed class EventLocation with _$EventLocation {
     required String city,
   }) = Venue;
 
-  /// [joinUrl] is shown to people going (Phase 5).
+  /// [joinUrl] is shown only to people going.
   const factory EventLocation.online({required Uri joinUrl}) = Online;
 }
 
@@ -48,7 +48,7 @@ abstract class TicketOffer with _$TicketOffer {
 ///
 /// Nothing about *you* is here: whether you saved it, hold a ticket for it
 /// or set a reminder lives in the user's own tables, joined when a screen
-/// reads them (Phase 3's `EventCardItem`). A sync can rewrite every field
+/// reads them (`EventCardItem`). A sync can rewrite every field
 /// here without losing any of that.
 @freezed
 abstract class Event with _$Event {

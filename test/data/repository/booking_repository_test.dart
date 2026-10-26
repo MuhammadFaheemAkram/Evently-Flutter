@@ -134,6 +134,29 @@ void main() {
       },
     );
 
+    test('an answer for another event is refused: nothing written', () async {
+      // A real booking, but for the Thames 10K, from another server.
+      final other = DataStack();
+      addTearDown(other.close);
+      await other.loadDemo();
+      final thames =
+          (await other.watchEventDetails('ev_thames_10k').first)!.item.event;
+      final wrong = await other.realApi.rsvp(
+        RsvpRequestDto(eventId: thames.id, type: thames.offers.first.type),
+      );
+      await loaded(api: (r) => ScriptedEventlyApi(r, rsvp: [wrong]));
+
+      expect(
+        await stack.booking.rsvp('ev_jazz_vaults', type: TicketType.vip),
+        isErr<DataFormatException>(),
+      );
+      expect(await tickets(), hasLength(4));
+      expect(await vipLeft(), 6);
+      final thamesHere =
+          (await stack.watchEventDetails('ev_thames_10k').first)!.item;
+      expect(thamesHere.isGoing, isFalse);
+    });
+
     test('a ticket the database refuses: something went wrong, and the '
         "event's counts aren't written either", () async {
       await loaded();

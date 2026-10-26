@@ -169,6 +169,13 @@ Saved ─▶ SavedCubit ─▶ EventsDao.watchSavedCards ─▶ splitByEnd ─�
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/features/search/{bloc,widgets}/`, `lib/features/saved/cubit/`; `daos/recent_searches_dao.dart`; `formatting/filter_labels.dart`.
+- **Tests:** `test/core/database/search_query_test.dart`, `test/features/{search,saved}/`, `test/app/search_saved_flows_test.dart`.
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

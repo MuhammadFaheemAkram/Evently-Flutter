@@ -203,6 +203,13 @@ Deleting an event someone saved, holds a ticket for (even a cancelled one), want
 
 ---
 
+## 🌱 Folder Structure Changes
+
+- **New:** `lib/domain/{model,repository,usecase}/`, `lib/core/database/{tables,daos}/`, `lib/core/network/` (+ `dto/`), `lib/core/storage/`, `lib/data/{mapper,repository}/`, `lib/features/welcome/cubit/`, `assets/json/`, `drift_schemas/`.
+- **Tests:** `test/core/{database,network}/`, `test/data/`, `test/domain/`, and the shared stack in `test/helpers/` (`data_stack.dart`, fixtures, `fakes/`).
+
+---
+
 ## 🤖🍏 Android / iOS Comparison
 
 From the two native specs:

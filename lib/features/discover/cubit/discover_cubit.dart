@@ -65,8 +65,8 @@ class DiscoverCubit extends Cubit<DiscoverState> {
         final firstRead = _cards == null;
         _cards = cards;
         if (firstRead && cards.isEmpty) {
-          // Welcome filled the cache, but Clear cache (Phase 6) can empty
-          // it: fetch before showing "no events".
+          // Welcome filled the cache, but Clear cache can empty it: fetch
+          // before showing "no events".
           unawaited(_fill());
         } else {
           _publish();

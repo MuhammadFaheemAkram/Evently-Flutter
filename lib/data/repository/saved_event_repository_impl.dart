@@ -10,7 +10,7 @@ import 'package:injectable/injectable.dart';
 
 /// Saving writes straight to the database, with no server round trip: a
 /// save is the user's own note, unlike a booking, which only the server can
-/// grant (Phase 5).
+/// grant (`BookingRepositoryImpl`).
 @LazySingleton(as: SavedEventRepository)
 class SavedEventRepositoryImpl implements SavedEventRepository {
   const SavedEventRepositoryImpl(this._saved, this._events, this._clock);

@@ -6,7 +6,7 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**896 tests**, all on the host: no device, no network, no real clock. CI runs the same three commands on every push and pull request, after checking that the committed generated code is current.
+**900 tests**, all on the host: no device, no network, no real clock. CI runs the same three commands on every push and pull request, after checking that the committed generated code is current.
 
 ## What is covered
 
@@ -20,9 +20,9 @@ fvm flutter test
 | The accessibility tour | 71 | Every screen and state, light and dark, text at 200 % |
 | The fake server and the seed | 51 | The seed as of six instants, relative times, latency and failures, places and bookings, the catalog update, the calendar anchor |
 | Domain models | 41 | `EventTime` in four zones and across clock changes, `CalendarDate`, `TimeOfDayValue`, `Event` |
-| App-level flows | 35 | On the real DI graph: first launch, Discover, saving and refreshing offline, booking, cancelling, the agenda, settings, notifications and taps |
+| App-level flows | 36 | On the real DI graph: first launch, Discover, saving and refreshing offline, booking (a linked event keeps Close after Back), cancelling, the agenda, settings, notifications and taps |
 | Use cases | 34 | RSVP checked again before the server; plan → diff → apply; the switch; alerts; the RSVP confirmation; the background sync |
-| Navigation | 31 | Typed routes, the first-launch gate, tabs and the drawer, deep links with Close |
+| Navigation | 34 | Typed routes, the first-launch gate, tabs and the drawer, deep links with Close (kept by a screen rebuilt while covered) |
 | Common, DI, background | 13 | `EventClock`, `settled`, the composition root resolving, the background dispatch |
 
 ## How the tests are built

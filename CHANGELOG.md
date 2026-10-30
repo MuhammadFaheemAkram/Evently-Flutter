@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format is based on 
 
 _All eight build phases are complete. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what's next._
 
+### Fixed
+- **The Close fallback** asked `Navigator.canPop()`, which answers for the whole stack. An event opened by a link and booked from (it changes to "You're going" while the ticket covers it) lost Close, and after Back from the ticket had no way out. It now asks its own route (`ModalRoute.impliesAppBarDismissal`, as the `AppBar` does). Tested on the helper and by that booking flow.
+
 ## [0.8.0] — 2026-10-26 — Phase 8: Documentation & CI
 
 ### Added

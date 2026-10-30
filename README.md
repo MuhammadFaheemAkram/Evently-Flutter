@@ -268,7 +268,7 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**896 tests**, counted by area in [TESTING.md](docs/TESTING.md):
+**900 tests**, counted by area in [TESTING.md](docs/TESTING.md):
 
 | Area | Tests |
 |---|---:|

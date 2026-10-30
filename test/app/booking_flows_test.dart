@@ -51,6 +51,26 @@ void main() {
     await tester.pumpUntilFound(find.text("You're going"));
   });
 
+  testWidgets('a linked event booked from keeps Close: it changed under the '
+      'ticket, and still has a way out after Back', (tester) async {
+    await pumpEvently(
+      tester,
+      withDemo: true,
+      initialLocation: '/events/ev_jazz_vaults',
+    );
+    await tester.pumpUntilFound(appBarTitled('Event'));
+    expect(find.byTooltip('Close'), findsOneWidget);
+
+    await book(tester);
+    await tester.pumpUntilFound(appBarTitled('Ticket'));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.pumpUntilFound(find.text("You're going"));
+
+    expect(find.byType(BackButton), findsNothing);
+    expect(find.byTooltip('Close'), findsOneWidget);
+  });
+
   testWidgets('RSVP offline fails cleanly; Try again books', (tester) async {
     await pumpEvently(
       tester,
